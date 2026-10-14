@@ -2,1747 +2,1846 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#10271f">
-<title>HAVEN | Exceptional Homes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10251e">
 
-<link rel="preconnect" href="https://images.unsplash.com">
+<title>HAVEN & CO. REALTY | Find Your Place</title>
+
+<meta name="description" content="Discover exceptional properties, luxury homes, apartments and land across Nigeria with Haven & Co. Realty.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 :root {
-  --green:#102d23;
-  --green2:#1c4938;
-  --gold:#c9a86b;
-  --cream:#f7f5ef;
-  --muted:#777e77;
-  --white:#fff;
+  --green: #10251e;
+  --green2: #1b3b2e;
+  --gold: #c9a86b;
+  --cream: #f8f7f3;
+  --white: #ffffff;
+  --text: #202720;
+  --muted: #777e77;
+  --border: #e7e6df;
+  --radius: 14px;
+  --shadow: 0 12px 35px rgba(0,0,0,.07);
 }
 
 * {
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-html { scroll-behavior:smooth; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 85px;
+}
 
 body {
-  background:var(--cream);
-  color:#202720;
-  font-family:'DM Sans',sans-serif;
-  overflow-x:hidden;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--cream);
+  line-height: 1.6;
 }
 
-body.locked { overflow:hidden; }
-
-h1,h2,h3 {
-  font-family:'Playfair Display',serif;
-  font-weight:400;
+button, input, select {
+  font: inherit;
 }
 
-a { color:inherit;text-decoration:none; }
-button,input,select,textarea { font:inherit; }
-button { cursor:pointer; }
-
-.gold { color:var(--gold); }
-
-/* CINEMATIC MANSION INTRO */
-
-#intro {
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  overflow:hidden;
-  background:#080d0b;
-  color:white;
-  perspective:1400px;
+button, a {
+  -webkit-tap-highlight-color: transparent;
 }
 
-.intro-scene {
-  position:absolute;
-  inset:0;
-  transform-style:preserve-3d;
-  transform-origin:50% 65%;
-  animation:cameraApproach 10s cubic-bezier(.35,.05,.3,1) forwards;
+button {
+  cursor: pointer;
 }
 
-.intro-exterior {
-  position:absolute;
-  inset:-3%;
-  background:
-    linear-gradient(180deg,rgba(4,10,8,.08),rgba(4,10,8,.12) 45%,rgba(4,10,8,.75)),
-    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2400&q=95')
-    center center/cover no-repeat;
-  transform:translateZ(-20px) scale(1.02);
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-.intro-vignette {
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.5) 100%),
-    linear-gradient(0deg,rgba(0,0,0,.72),transparent 65%);
+img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
 }
 
-.intro-copy {
-  position:absolute;
-  left:8%;
-  right:8%;
-  bottom:11%;
-  z-index:4;
-  text-align:center;
-  transition:opacity .8s,transform .8s;
+.container {
+  width: min(1180px, 92%);
+  margin: auto;
 }
 
-.intro-kicker {
-  color:#e6ca91;
-  font-size:10px;
-  letter-spacing:5px;
-  text-transform:uppercase;
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.intro-copy h1 {
-  font-size:clamp(42px,8vw,88px);
-  line-height:1.05;
-  margin:18px 0;
+.section {
+  padding: 85px 0;
 }
 
-.intro-copy p {
-  color:rgba(255,255,255,.8);
-  font-size:11px;
-  letter-spacing:3px;
-  line-height:2;
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.2;
+  color: var(--green);
+  margin: 10px 0;
 }
 
-.enter-btn {
-  margin-top:27px;
-  padding:16px 29px;
-  background:rgba(14,38,28,.55);
-  color:white;
-  border:1px solid rgba(255,255,255,.65);
-  letter-spacing:2px;
-  font-size:10px;
-  backdrop-filter:blur(10px);
-  transition:.3s;
+.section-description {
+  color: var(--muted);
+  max-width: 570px;
+  font-size: 14px;
 }
 
-.enter-btn:hover {
-  background:var(--gold);
-  color:#101710;
+.btn {
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 12px 19px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: .25s;
 }
 
-.intro-brand {
-  position:absolute;
-  top:28px;
-  left:7%;
-  z-index:4;
-  font-size:23px;
-  font-weight:700;
-  letter-spacing:7px;
+.btn-primary {
+  background: var(--gold);
+  color: #17241b;
 }
 
-.intro-caption {
-  position:absolute;
-  right:7%;
-  top:35px;
-  font-size:9px;
-  letter-spacing:3px;
-  color:rgba(255,255,255,.75);
-  z-index:4;
+.btn-primary:hover {
+  background: #dfc28b;
+  transform: translateY(-2px);
 }
 
-.intro-bottom {
-  position:absolute;
-  bottom:25px;
-  left:0;
-  right:0;
-  text-align:center;
-  font-size:9px;
-  letter-spacing:3px;
-  color:rgba(255,255,255,.65);
-  z-index:4;
+.btn-outline {
+  border-color: rgba(255,255,255,.55);
+  color: white;
 }
 
-@keyframes cameraApproach {
-  0%,12% { transform:scale(1); }
-  55% { transform:scale(1.22); }
-  78%,100% { transform:scale(1.65); }
+.btn-outline:hover {
+  background: white;
+  color: var(--green);
 }
 
-#intro.entering .intro-scene {
-  animation:finalCamera 2.5s cubic-bezier(.5,0,.7,1) forwards;
+.btn-dark {
+  background: var(--green);
+  color: white;
 }
 
-#intro.entering .intro-copy {
-  opacity:0;
-  transform:scale(.7) translateY(25px);
+.btn-dark:hover {
+  background: var(--green2);
 }
 
-@keyframes finalCamera {
-  0% { transform:scale(1.65); }
-  100% { transform:scale(3.3) translateY(4%); }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
 }
 
-#intro.gone {
-  animation:introDisappear 1s ease forwards;
-  pointer-events:none;
-}
-
-@keyframes introDisappear {
-  to { opacity:0;visibility:hidden; }
-}
-
-/* HEADER */
+/* NAVIGATION */
 
 header {
-  position:sticky;
-  top:0;
-  z-index:100;
-  background:rgba(247,245,239,.96);
-  backdrop-filter:blur(15px);
-  border-bottom:1px solid #e8e5db;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(16,37,30,.98);
+  color: white;
+  border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
 .navbar {
-  max-width:1350px;
-  margin:auto;
-  padding:19px 5%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px;
+  min-height: 76px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
 }
 
-.brand {
-  font-size:27px;
-  color:var(--green);
-  font-weight:700;
-  letter-spacing:6px;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
 }
 
-.brand small {
-  display:block;
-  font-family:'DM Sans',sans-serif;
-  font-size:8px;
-  letter-spacing:3px;
-  color:var(--gold);
-  margin-top:3px;
+.logo-symbol {
+  width: 39px;
+  height: 39px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  display: grid;
+  place-items: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+}
+
+.logo-text strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+
+.logo-text small {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--gold);
 }
 
 .nav-links {
-  display:flex;
-  gap:27px;
-  align-items:center;
-  font-size:12px;
+  display: flex;
+  gap: 25px;
+  align-items: center;
+  font-size: 12px;
 }
 
-.nav-links a:hover { color:#a1844f; }
-
-.nav-button,.primary {
-  border:1px solid var(--green);
-  background:var(--green);
-  color:white;
-  padding:14px 20px;
-  font-size:11px;
-  transition:.25s;
+.nav-links a:hover {
+  color: var(--gold);
 }
 
-.nav-button:hover,.primary:hover {
-  background:var(--gold);
-  border-color:var(--gold);
-  color:#111;
-}
-
-.menu-button {
-  display:none;
-  border:0;
-  background:transparent;
-  color:var(--green);
-  font-size:27px;
+.menu-toggle {
+  display: none;
+  border: 1px solid #536258;
+  background: transparent;
+  color: white;
+  padding: 8px 11px;
+  border-radius: 5px;
 }
 
 /* HERO */
 
 .hero {
-  max-width:1450px;
-  margin:auto;
-  padding:75px 7%;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:50px;
-  align-items:center;
+  min-height: 590px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(8,23,17,.91), rgba(8,23,17,.49)),
+    url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=85') center/cover;
 }
 
-.eyebrow {
-  font-size:10px;
-  letter-spacing:4px;
-  color:#9b7d49;
-  text-transform:uppercase;
-  font-weight:600;
+.hero-content {
+  max-width: 720px;
+  padding: 85px 0 110px;
+  animation: fadeUp .9s ease both;
 }
 
 .hero h1 {
-  font-size:clamp(43px,6vw,78px);
-  color:var(--green);
-  line-height:1.08;
-  margin:22px 0;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(42px, 7vw, 76px);
+  line-height: 1.09;
+  font-weight: 500;
+  margin: 20px 0;
 }
 
-.hero h1 em { color:#a48753; }
+.hero h1 span {
+  color: var(--gold);
+  font-style: italic;
+}
 
 .hero p {
-  color:var(--muted);
-  max-width:470px;
-  line-height:1.9;
-  font-size:14px;
+  color: #e0e5df;
+  max-width: 490px;
+  font-size: 14px;
+  margin-bottom: 27px;
 }
 
 .hero-actions {
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.secondary {
-  padding:14px 20px;
-  border:1px solid #cccabe;
-  color:var(--green);
-  font-size:11px;
-  background:transparent;
+.hero-stats {
+  display: flex;
+  gap: 35px;
+  flex-wrap: wrap;
+  margin-top: 50px;
 }
 
-.hero-visual {
-  position:relative;
-  min-height:440px;
+.hero-stats strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 27px;
+  color: var(--gold);
 }
 
-.hero-photo {
-  position:absolute;
-  inset:0 0 30px 30px;
-  background:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=90') center/cover;
-  box-shadow:0 20px 55px #0002;
+.hero-stats small {
+  color: #e0e5df;
+  font-size: 10px;
 }
 
-.hero-label {
-  position:absolute;
-  left:0;
-  bottom:0;
-  background:var(--green);
-  color:white;
-  padding:24px;
+/* INTRO */
+
+.intro-strip {
+  background: white;
+  border-bottom: 1px solid var(--border);
 }
 
-.hero-label small {
-  display:block;
-  color:var(--gold);
-  font-size:9px;
-  letter-spacing:3px;
-  margin-bottom:8px;
+.intro-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  padding: 27px 0;
 }
 
-.hero-label strong {
-  font-family:'Playfair Display',serif;
-  font-size:22px;
-  font-weight:400;
+.intro-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-/* TRUST BAR */
-
-.trust-bar {
-  background:var(--green);
-  color:white;
-  padding:32px 6%;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:20px;
-  text-align:center;
+.intro-icon {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  background: #f4efe3;
+  color: var(--green);
+  border-radius: 50%;
+  font-size: 19px;
 }
 
-.trust-bar strong {
-  display:block;
-  color:var(--gold);
-  font-family:'Playfair Display',serif;
-  font-size:28px;
-  font-weight:400;
+.intro-item strong {
+  display: block;
+  font-size: 13px;
 }
 
-.trust-bar span {
-  display:block;
-  color:#ffffffb9;
-  font-size:9px;
-  letter-spacing:1px;
-  margin-top:7px;
+.intro-item small {
+  color: var(--muted);
+  font-size: 11px;
 }
 
-/* SECTIONS */
+/* SEARCH */
 
-.section {
-  padding:90px 7%;
+.search-section {
+  padding: 65px 0;
 }
 
-.container {
-  max-width:1300px;
-  margin:auto;
+.search-panel {
+  background: white;
+  border: 1px solid var(--border);
+  padding: clamp(20px, 4vw, 36px);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
 }
 
-.section-heading {
-  max-width:650px;
-  margin:0 auto 43px;
-  text-align:center;
+.search-header {
+  margin-bottom: 25px;
 }
 
-.section-heading h2 {
-  font-size:clamp(32px,4vw,49px);
-  color:var(--green);
-  margin:15px 0;
+.search-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  color: var(--green);
 }
 
-.section-heading p {
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.9;
+.search-header p {
+  color: var(--muted);
+  font-size: 13px;
 }
 
-/* PROPERTY FINDER */
-
-.finder-section {
-  padding:80px 5%;
-  background:#eeece4;
+.search-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
-.finder-box {
-  max-width:1200px;
-  margin:auto;
-  padding:clamp(24px,4vw,48px);
-  background:white;
-  box-shadow:0 15px 50px #0000000d;
+.search-tab {
+  padding: 10px 17px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  border-radius: 4px;
+  font-size: 12px;
 }
 
-.finder-box h2 {
-  font-size:clamp(30px,4vw,46px);
-  color:var(--green);
-  margin:12px 0;
+.search-tab.active {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
 }
 
-.finder-box>p {
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.8;
-}
-
-.finder-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:18px;
-  margin-top:28px;
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .field label {
-  display:block;
-  margin-bottom:9px;
-  color:#59635b;
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:1px;
-  text-transform:uppercase;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #4a554b;
 }
 
-.field input,.field select,.field textarea {
-  width:100%;
-  min-height:48px;
-  border:1px solid #dedfd7;
-  background:white;
-  padding:12px;
-  outline:none;
-  color:#222;
-  border-radius:0;
+.field input,
+.field select {
+  width: 100%;
+  min-height: 47px;
+  padding: 12px;
+  border: 1px solid #dedfd7;
+  border-radius: 4px;
+  background: white;
+  color: var(--text);
+  font-size: 12px;
 }
 
-.field input:focus,.field select:focus,.field textarea:focus {
-  border-color:var(--gold);
+.field input:focus,
+.field select:focus {
+  border-color: var(--gold);
+  outline: 1px solid var(--gold);
 }
 
-.finder-actions {
-  display:flex;
-  align-items:center;
-  gap:15px;
-  flex-wrap:wrap;
-  margin-top:25px;
+.field input::placeholder {
+  color: #a3a69f;
 }
 
-.clear-button {
-  border:0;
-  background:transparent;
-  color:var(--muted);
-  padding:12px;
+.location-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
 }
 
-.finder-note {
-  margin-top:18px;
-  font-size:11px;
-  line-height:1.8;
-  color:var(--muted);
+.search-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 23px;
 }
 
-#searchMessage {
-  margin-top:18px;
-  color:var(--green);
-  font-size:13px;
-  line-height:1.7;
+.search-status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 15px;
 }
-/* PROPERTY CARDS */
+
+/* MAP */
+
+.map-section {
+  margin-top: 35px;
+}
+
+.map-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.map-heading h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--green);
+}
+
+.map-heading p {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#propertyMap {
+  width: 100%;
+  height: 390px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 1;
+  background: #e8e9e3;
+}
+
+.map-disclaimer {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 10px;
+  line-height: 1.8;
+}
+
+/* PROPERTIES */
+
+.properties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.results-count {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 10px;
+}
 
 .property-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
 
 .property-card {
-  background:white;
-  overflow:hidden;
-  box-shadow:0 8px 28px #00000008;
-  transition:transform .3s,box-shadow .3s;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform .3s, box-shadow .3s;
+  animation: fadeUp .5s ease both;
 }
 
 .property-card:hover {
-  transform:translateY(-5px);
-  box-shadow:0 18px 45px #00000015;
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
 }
 
-.property-photo {
-  position:relative;
-  height:250px;
-  background-size:cover;
-  background-position:center;
+.property-image {
+  height: 225px;
+  position: relative;
+  overflow: hidden;
+  background: #e4e4de;
 }
 
-.badge {
-  position:absolute;
-  top:15px;
-  left:15px;
-  background:var(--green);
-  color:white;
-  padding:8px 12px;
-  font-size:9px;
-  letter-spacing:1px;
+.property-image img {
+  height: 100%;
+  transition: transform .6s;
 }
 
-.price-tag {
-  position:absolute;
-  bottom:0;
-  left:0;
-  background:var(--gold);
-  color:#151a15;
-  padding:12px 16px;
-  font-size:13px;
-  font-weight:700;
+.property-card:hover .property-image img {
+  transform: scale(1.05);
 }
 
-.property-info { padding:23px; }
-
-.property-info h3 {
-  color:var(--green);
-  font-size:24px;
-  margin-bottom:9px;
+.property-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 7px 10px;
+  background: var(--green);
+  color: white;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.location {
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.8;
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: white;
+  color: var(--green);
+  font-size: 19px;
 }
 
-.features {
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  padding:15px 0;
-  margin:16px 0;
-  border-top:1px solid #eee;
-  border-bottom:1px solid #eee;
-  font-size:10px;
+.favorite-btn.active {
+  color: #c33b43;
 }
 
-.property-footer {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
+.property-info {
+  padding: 20px;
 }
 
-.details-button {
-  background:var(--green);
-  color:white;
-  border:0;
-  padding:12px 14px;
-  font-size:10px;
+.property-location {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 9px;
 }
 
-.details-button:hover {
-  background:var(--gold);
-  color:#111;
+.property-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--green);
+  margin-bottom: 11px;
 }
 
-#noResults {
-  display:none;
-  text-align:center;
-  padding:40px 10px;
-  line-height:1.8;
-  color:var(--muted);
+.property-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green);
 }
 
-/* GALLERY MODAL */
-
-.modal {
-  position:fixed;
-  inset:0;
-  z-index:5000;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  padding:16px;
-  background:#000b;
+.property-price small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
 }
 
-.modal.open { display:flex; }
-
-.modal-box {
-  width:100%;
-  max-width:720px;
-  max-height:94vh;
-  overflow:auto;
-  background:var(--cream);
-  position:relative;
+.property-features {
+  display: flex;
+  gap: 13px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+  margin: 16px 0;
+  color: #59635b;
+  font-size: 10px;
 }
 
-.modal-close {
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:5;
-  width:42px;
-  height:42px;
-  border:0;
-  background:white;
-  color:#17231b;
-  font-size:27px;
+.property-actions {
+  display: flex;
+  gap: 9px;
 }
 
-.gallery-stage {
-  position:relative;
-  background:#111;
+.property-actions button,
+.property-actions a {
+  flex: 1;
+  font-size: 11px;
+  padding: 10px 7px;
 }
 
-.gallery-image {
-  height:350px;
-  background-position:center;
-  background-size:cover;
-  transition:opacity .2s;
+.empty-state {
+  text-align: center;
+  padding: 45px 15px;
+  background: white;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  margin-top: 20px;
 }
 
-.gallery-count {
-  position:absolute;
-  left:15px;
-  top:15px;
-  color:white;
-  background:#0009;
-  padding:9px 13px;
-  font-size:11px;
+.empty-state h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 25px;
+  margin-bottom: 8px;
 }
 
-.gallery-arrow {
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
-  width:42px;
-  height:42px;
-  border:1px solid #ffffffa8;
-  background:#0008;
-  color:white;
-  font-size:26px;
-}
-
-.gallery-arrow:hover {
-  background:var(--gold);
-  color:#111;
-}
-
-.gallery-prev { left:12px; }
-.gallery-next { right:12px; }
-
-.gallery-dots {
-  display:flex;
-  justify-content:center;
-  gap:9px;
-  padding:15px 10px;
-  background:#101713;
-}
-
-.gallery-dot {
-  width:8px;
-  height:8px;
-  border:0;
-  border-radius:50%;
-  background:#777;
-}
-
-.gallery-dot.active {
-  background:var(--gold);
-  transform:scale(1.25);
-}
-
-.gallery-thumbnails {
-  display:flex;
-  gap:8px;
-  padding:0 12px 15px;
-  background:#101713;
-  overflow-x:auto;
-}
-
-.gallery-thumb {
-  flex:0 0 75px;
-  height:55px;
-  border:2px solid transparent;
-  background-size:cover;
-  background-position:center;
-  opacity:.65;
-}
-
-.gallery-thumb.active {
-  border-color:var(--gold);
-  opacity:1;
-}
-
-.modal-body { padding:28px; }
-
-.modal-body h2 {
-  color:var(--green);
-  font-size:32px;
-  margin:12px 0;
-}
-
-.modal-body p {
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.9;
-}
-
-.modal-info {
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  margin:20px 0;
-  font-size:11px;
+.empty-state p {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 /* ABOUT */
 
-.about-section { background:#eae8df; }
+.about-section {
+  background: var(--green);
+  color: white;
+}
 
 .about-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  align-items:center;
-  gap:60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
 }
 
-.about-photo {
-  min-height:470px;
-  background:url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85') center/cover;
+.about-image {
+  min-height: 390px;
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85') center/cover;
+  border-radius: 5px;
 }
 
-.about-copy h2 {
-  color:var(--green);
-  font-size:clamp(34px,4vw,52px);
-  line-height:1.15;
-  margin:18px 0;
+.about-stamp {
+  position: absolute;
+  right: -15px;
+  bottom: 25px;
+  background: var(--gold);
+  color: var(--green);
+  padding: 19px;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
 }
 
-.about-copy p {
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.9;
+.about-section .section-title {
+  color: white;
+}
+
+.about-copy {
+  color: #c8d0ca;
+  font-size: 13px;
+  margin: 17px 0;
 }
 
 .about-points {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-  margin-top:25px;
+  display: grid;
+  gap: 13px;
+  margin: 25px 0;
+  font-size: 12px;
 }
 
-.about-points strong {
-  font-size:12px;
-  color:var(--green);
-}
-
-.about-points p {
-  margin-top:7px;
-  font-size:11px;
-}
-
-/* SERVICES */
-
-.services-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:22px;
-}
-
-.service-card {
-  padding:30px;
-  border:1px solid #dfdfd5;
-  transition:.3s;
-}
-
-.service-card:hover {
-  background:var(--green);
-  color:white;
-  transform:translateY(-4px);
-}
-
-.service-card h3 {
-  font-size:23px;
-  margin:18px 0 12px;
-}
-
-.service-card p {
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.9;
-}
-
-.service-card:hover p { color:#ffffffbd; }
-
-/* BRAND VALUES */
-
-.values-section {
-  background:var(--green);
-  color:white;
-}
-
-.values-section .section-heading h2 { color:white; }
-.values-section .section-heading p { color:#ffffffb9; }
-
-.values-grid {
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:20px;
-}
-
-.value-card {
-  border:1px solid #ffffff26;
-  padding:28px;
-}
-
-.value-card span {
-  color:var(--gold);
-  font-size:24px;
-}
-
-.value-card h3 {
-  font-size:23px;
-  margin:17px 0 10px;
-}
-
-.value-card p {
-  color:#ffffffb9;
-  font-size:12px;
-  line-height:1.9;
+.about-points span {
+  color: var(--gold);
+  margin-right: 9px;
 }
 
 /* CONTACT */
 
-.contact-grid {
-  display:grid;
-  grid-template-columns:.85fr 1.15fr;
-  gap:50px;
+.contact-box {
+  background: white;
+  padding: 40px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  border-radius: 8px;
 }
 
-.contact-copy h2 {
-  color:var(--green);
-  font-size:clamp(35px,4vw,50px);
-  margin:17px 0;
+.contact-box h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--green);
+  font-size: clamp(27px, 4vw, 38px);
 }
 
-.contact-copy p {
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.9;
+.contact-box p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 9px;
 }
-
-.contact-form {
-  background:white;
-  padding:30px;
-  box-shadow:0 12px 40px #0000000c;
-}
-
-.contact-form .field { margin-bottom:17px; }
-.contact-form textarea { min-height:110px;resize:vertical; }
-.contact-form .primary { width:100%; }
 
 /* FOOTER */
 
 footer {
-  padding:55px 7% 24px;
-  background:#0a2018;
-  color:white;
+  background: #091a13;
+  color: white;
+  padding: 50px 0 25px;
 }
 
 .footer-grid {
-  max-width:1300px;
-  margin:auto;
-  display:grid;
-  grid-template-columns:1.4fr 1fr 1fr;
-  gap:35px;
-  padding-bottom:35px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 35px;
+  padding-bottom: 35px;
 }
 
-.footer-logo {
-  font-size:28px;
-  letter-spacing:6px;
+.footer-copy {
+  color: #aeb9b0;
+  font-size: 12px;
+  max-width: 330px;
+  margin-top: 17px;
 }
 
-.footer-grid p {
-  color:#ffffffa8;
-  font-size:12px;
-  line-height:1.9;
-  margin-top:15px;
+.footer-col h4 {
+  font-size: 12px;
+  margin-bottom: 15px;
+  color: var(--gold);
 }
 
-.footer-grid h4 {
-  color:var(--gold);
-  font-size:10px;
-  letter-spacing:2px;
-  margin-bottom:17px;
-}
-
-.footer-grid a {
-  display:block;
-  color:#ffffffbd;
-  font-size:12px;
-  margin:12px 0;
+.footer-col a {
+  display: block;
+  font-size: 11px;
+  color: #b8c2ba;
+  margin-bottom: 10px;
 }
 
 .footer-bottom {
-  border-top:1px solid #ffffff22;
-  padding-top:20px;
-  font-size:10px;
-  color:#ffffff80;
-  line-height:1.8;
+  border-top: 1px solid #27372d;
+  padding-top: 20px;
+  color: #98a49a;
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
-/* FLOATING CONTACT */
+/* PROPERTY MODAL */
 
-.whatsapp-float {
-  position:fixed;
-  right:18px;
-  bottom:20px;
-  z-index:200;
-  background:#188c52;
-  color:white;
-  border-radius:40px;
-  padding:14px 18px;
-  font-size:12px;
-  font-weight:700;
-  box-shadow:0 5px 25px #0003;
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5,15,10,.82);
+  padding: 15px;
 }
 
-/* RESPONSIVE */
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  width: min(850px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: white;
+  border-radius: 10px;
+  position: relative;
+}
+
+.modal-close {
+  position: sticky;
+  float: right;
+  top: 10px;
+  margin: 10px;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: var(--green);
+  color: white;
+  border-radius: 50%;
+  font-size: 21px;
+}
+
+.gallery-main {
+  height: 360px;
+  background: #e5e5df;
+}
+
+.gallery-main img {
+  height: 100%;
+}
+
+.gallery-thumbs {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.gallery-thumbs img {
+  min-width: 90px;
+  width: 90px;
+  height: 65px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-details {
+  padding: 25px;
+}
+
+.modal-details h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--green);
+  font-size: 30px;
+  margin: 8px 0;
+}
+
+.modal-details p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 12px 0;
+}
+
+.modal-features {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  font-size: 12px;
+}
+
+/* ANIMATIONS */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media(max-width:900px) {
-  .hero { gap:28px;padding:55px 5%; }
-  .hero-visual { min-height:380px; }
-  .nav-links { gap:13px;font-size:11px; }
-  .nav-button { display:none; }
-  .property-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .services-grid,.values-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .property-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nav-links {
+    gap: 14px;
+  }
+
+  .about-grid {
+    gap: 30px;
+  }
 }
 
 @media(max-width:650px) {
-  .navbar { padding:16px 5%; }
-  .brand { font-size:23px; }
-  .menu-button { display:block; }
+  .section {
+    padding: 60px 0;
+  }
+
+  .navbar {
+    min-height: 68px;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
 
   .nav-links {
-    display:none;
-    position:absolute;
-    top:100%;
-    left:0;
-    right:0;
-    padding:22px 6%;
-    background:var(--cream);
-    flex-direction:column;
-    align-items:flex-start;
-    box-shadow:0 12px 30px #0001;
+    display: none;
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    background: var(--green);
+    padding: 20px 4%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
   }
 
-  .nav-links.open { display:flex; }
+  .nav-links.open {
+    display: flex;
+  }
 
   .hero {
-    grid-template-columns:1fr;
-    padding:48px 6%;
+    min-height: 530px;
   }
 
-  .hero h1 { font-size:48px; }
-  .hero-visual { min-height:330px; }
-  .hero-photo { left:15px; }
+  .hero-content {
+    padding: 65px 0;
+  }
 
-  .trust-bar { grid-template-columns:repeat(2,1fr); }
-  .section { padding:65px 6%; }
-  .finder-section { padding:55px 4%; }
-  .finder-box { padding:22px 17px; }
-  .finder-grid { grid-template-columns:1fr;gap:15px; }
+  .hero-stats {
+    gap: 23px;
+  }
 
-  .property-grid,.services-grid,.values-grid { grid-template-columns:1fr; }
-  .property-photo { height:250px; }
+  .intro-inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 
-  .about-grid,.contact-grid { grid-template-columns:1fr;gap:32px; }
-  .about-photo { min-height:320px; }
+  .search-grid,
+  .location-fields {
+    grid-template-columns: 1fr;
+  }
 
-  .footer-grid { grid-template-columns:1fr;gap:27px; }
-  .gallery-image { height:250px; }
-  .gallery-thumb { flex-basis:62px;height:46px; }
-  .modal-body { padding:20px; }
+  .property-grid {
+    grid-template-columns: 1fr;
+  }
 
-  .intro-brand { top:22px;font-size:18px; }
-  .intro-caption { top:27px;font-size:7px; }
-  .intro-copy { bottom:15%; }
-  .intro-copy h1 { font-size:43px; }
-  .intro-copy p { font-size:9px; }
-}
+  .property-image {
+    height: 235px;
+  }
 
-@media(prefers-reduced-motion:reduce) {
-  *,*::before,*::after {
-    animation-duration:.01ms!important;
-    transition-duration:.01ms!important;
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-image {
+    min-height: 300px;
+  }
+
+  .about-stamp {
+    right: 10px;
+  }
+
+  .contact-box {
+    padding: 25px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  #propertyMap {
+    height: 320px;
+  }
+
+  .gallery-main {
+    height: 250px;
+  }
+
+  .modal-details h2 {
+    font-size: 25px;
   }
 }
 </style>
 </head>
+<body>
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="#" class="logo">HAVEN <span>&</span> CO.</a>
 
-<body class="locked">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
 
-<!-- OPENING EXPERIENCE -->
-<div id="intro">
-  <div class="intro-scene">
-    <div class="intro-exterior"></div>
-    <div class="intro-vignette"></div>
-  </div>
+      <nav class="nav-links" id="navLinks">
+        <a href="#home">Home</a>
+        <a href="#properties">Properties</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact</a>
+      </nav>
 
-  <div class="intro-brand">HAVEN<span class="gold">.</span></div>
-  <div class="intro-caption">PROPERTY · LIFESTYLE · HOME</div>
-
-  <div class="intro-copy">
-    <span class="intro-kicker">A new standard of living</span>
-    <h1>Find your place<br>in the <em class="gold">world.</em></h1>
-    <p>EXCEPTIONAL HOMES. EXTRAORDINARY LIVING.</p>
-    <button class="enter-btn" id="enterButton">ENTER HAVEN ↗</button>
-  </div>
-
-  <div class="intro-bottom">YOUR NEXT CHAPTER STARTS HERE</div>
-</div>
-
-<header>
-  <nav class="navbar">
-    <a href="#home" class="brand">HAVEN<small>REAL ESTATE & LIFESTYLE</small></a>
-    <button class="menu-button" id="menuButton" aria-label="Open menu">☰</button>
-
-    <div class="nav-links" id="navLinks">
-      <a href="#home">Home</a>
-      <a href="#finder">Find a home</a>
-      <a href="#properties">Properties</a>
-      <a href="#about">About</a>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
+      <a href="#properties" class="nav-cta">Explore Homes ↗</a>
     </div>
+  </header>
 
-    <a class="nav-button" href="#finder">FIND YOUR HOME ↗</a>
-  </nav>
-</header>
-
-<main>
-<section class="hero" id="home">
-  <div>
-    <span class="eyebrow">Welcome to a better way home</span>
-    <h1>More than a house.<br><em>A feeling.</em></h1>
-    <p>Discover exceptional properties, explore inspiring spaces, and find a home that feels like it was made just for you.</p>
-    <div class="hero-actions">
-      <a href="#finder" class="primary">FIND YOUR PROPERTY ↗</a>
-      <a href="#properties" class="secondary">EXPLORE HOMES</a>
-    </div>
-  </div>
-
-  <div class="hero-visual">
-    <div class="hero-photo"></div>
-    <div class="hero-label">
-      <small>THE HAVEN COLLECTION</small>
-      <strong>Spaces that inspire.</strong>
-    </div>
-  </div>
-</section>
-
-<div class="trust-bar">
-  <div><strong>01</strong><span>PERSONAL PROPERTY SEARCH</span></div>
-  <div><strong>02</strong><span>CURATED HOME COLLECTIONS</span></div>
-  <div><strong>03</strong><span>BUYING & RENTING SUPPORT</span></div>
-  <div><strong>04</strong><span>YOUR NEEDS COME FIRST</span></div>
-</div>
-
-<section class="finder-section" id="finder">
-  <div class="finder-box">
-    <span class="eyebrow">Your home, your way</span>
-    <h2>Let's find your <em>perfect place.</em></h2>
-    <p>Choose your preferences to explore matching properties.</p>
-
-    <form id="searchForm">
-      <div class="finder-grid">
-        <div class="field">
-          <label for="propertyType">Property type</label>
-          <select id="propertyType">
-            <option value="all">All types</option>
-            <option value="villa">Villa</option>
-            <option value="house">House</option>
-            <option value="apartment">Apartment</option>
-            <option value="land">Land</option>
-          </select>
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
+        <span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span>
+        <h1>Find a Place<br>To <em>Call Home.</em></h1>
+        <p>
+          Discover exceptional homes, apartments, and investment properties
+          in locations that fit your lifestyle.
+        </p>
+        <div class="hero-actions">
+          <a href="#properties" class="btn btn-gold">Explore Properties ↗</a>
+          <a href="#about" class="btn btn-outline">Discover Our Story</a>
         </div>
-
-        <div class="field">
-          <label for="propertyLocation">Preferred location</label>
-          <select id="propertyLocation">
-            <option value="all">Anywhere</option>
-            <option value="lagos">Lagos</option>
-            <option value="abuja">Abuja</option>
-            <option value="owerri">Owerri</option>
-            <option value="epe">Epe</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="propertyPurpose">I want to</label>
-          <select id="propertyPurpose">
-            <option value="all">Buy or rent</option>
-            <option value="sale">Buy</option>
-            <option value="rent">Rent</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="minBudget">Minimum budget (₦)</label>
-          <input id="minBudget" type="number" min="0" placeholder="e.g. 5000000">
-        </div>
-
-        <div class="field">
-          <label for="maxBudget">Maximum budget (₦)</label>
-          <input id="maxBudget" type="number" min="0" placeholder="e.g. 100000000">
-        </div>
-
-        <div class="field">
-          <label for="bedrooms">Minimum bedrooms</label>
-          <select id="bedrooms">
-            <option value="0">Any</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-            <option value="5">5+</option>
-          </select>
+        <div class="hero-note">
+          <span class="gold-dot"></span>
+          Your trusted guide to finding the right property.
         </div>
       </div>
-
-      <div class="finder-actions">
-        <button class="primary" type="submit">FIND MY PROPERTY ↗</button>
-        <button class="clear-button" type="reset" id="clearSearch">Clear filters</button>
+      <div class="hero-bottom">
+        <span>RESIDENTIAL</span>
+        <span>COMMERCIAL</span>
+        <span>INVESTMENT</span>
+        <span>RENTALS</span>
       </div>
+    </section>
 
-      <p class="finder-note">Demo listings only. Verify actual property prices, ownership and availability with the owner.</p>
-      <div id="searchMessage" aria-live="polite"></div>
-    </form>
-  </div>
-</section>
+    <section class="intro-strip">
+      <div class="container intro-inner">
+        <div>
+          <span class="eyebrow">THE HAVEN EXPERIENCE</span>
+          <h2>Property searching,<br><em>made personal.</em></h2>
+        </div>
+        <p>
+          From your first apartment to your dream home, explore properties
+          by location, budget, and the details that matter most to you.
+        </p>
+      </div>
+    </section>
 
-<section class="section" id="properties">
-  <div class="container">
-    <div class="section-heading">
-      <span class="eyebrow">Explore the collection</span>
-      <h2>Spaces worth <em>coming home to.</em></h2>
-      <p>Explore sample homes and open their photo galleries to see more of each space.</p>
+    <section class="search-section" id="search">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">LET'S FIND YOUR PLACE</span>
+            <h2>Search <em>Properties</em></h2>
+          </div>
+          <p>Make your search as specific as you like.</p>
+        </div>
+
+        <div class="search-panel">
+          <div class="search-tabs">
+            <button class="search-tab active" type="button" data-purpose="All">All Properties</button>
+            <button class="search-tab" type="button" data-purpose="Sale">For Sale</button>
+            <button class="search-tab" type="button" data-purpose="Rent">For Rent</button>
+          </div>
+
+          <form id="searchForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="propertyType">Property Type</label>
+                <select id="propertyType">
+                  <option value="">Any property type</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="House">House</option>
+                  <option value="Duplex">Duplex</option>
+                  <option value="Land">Land</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="propertyPurpose">Purpose</label>
+                <select id="propertyPurpose">
+                  <option value="">Sale or rent</option>
+                  <option value="Sale">For sale</option>
+                  <option value="Rent">For rent</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="minBudget">Minimum Budget (₦)</label>
+                <input id="minBudget" type="number" min="0" placeholder="e.g. 500000">
+              </div>
+
+              <div class="form-group">
+                <label for="maxBudget">Maximum Budget (₦)</label>
+                <input id="maxBudget" type="number" min="0" placeholder="e.g. 50000000">
+              </div>
+
+              <div class="form-group">
+                <label for="bedrooms">Bedrooms</label>
+                <select id="bedrooms">
+                  <option value="">Any number</option>
+                  <option value="1">1 bedroom</option>
+                  <option value="2">2 bedrooms</option>
+                  <option value="3">3 bedrooms</option>
+                  <option value="4">4 bedrooms</option>
+                  <option value="5">5+ bedrooms</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="propertyLocation">State</label>
+                <input id="propertyLocation" list="stateOptions" placeholder="e.g. Abuja">
+                <datalist id="stateOptions">
+                  <option value="Abuja">
+                  <option value="Lagos">
+                  <option value="Imo">
+                  <option value="Rivers">
+                  <option value="Anambra">
+                  <option value="Enugu">
+                  <option value="Delta">
+                  <option value="Oyo">
+                  <option value="Ogun">
+                  <option value="Kaduna">
+                  <option value="Kano">
+                  <option value="Akwa Ibom">
+                  <option value="Cross River">
+                  <option value="Edo">
+                  <option value="Abia">
+                </datalist>
+              </div>
+
+              <div class="form-group">
+                <label for="propertyCity">City / Area</label>
+                <input id="propertyCity" placeholder="e.g. Maitama, Lekki">
+              </div>
+
+              <div class="form-group">
+                <label for="propertyStreet">Street / Estate</label>
+                <input id="propertyStreet" placeholder="Street or estate name">
+              </div>
+
+              <div class="form-group full-width">
+                <label for="propertyAddress">Full Address / Landmark</label>
+                <input id="propertyAddress" placeholder="Enter a full address or nearby landmark">
+                <small>Use this field to narrow your location search.</small>
+              </div>
+            </div>
+
+            <div class="search-actions">
+              <button class="btn btn-gold" type="submit">Search Properties ↗</button>
+              <button class="btn btn-light" type="button" id="clearSearch">Clear Filters</button>
+            </div>
+
+            <p id="searchMessage" class="search-message" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="listings-section" id="properties">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">HANDPICKED FOR YOU</span>
+            <h2>Featured <em>Properties</em></h2>
+          </div>
+          <span id="listingCount" class="listing-count">Loading properties...</span>
+        </div>
+
+        <div class="listing-toolbar">
+          <p>Explore our sample property collection.</p>
+          <a href="#search" class="text-link">Refine your search ↓</a>
+        </div>
+
+        <div id="propertyGrid" class="property-grid">
+          <div class="loading-state">Preparing your property collection...</div>
+        </div>
+
+        <div id="noResults" class="empty-state" hidden>
+          <div class="empty-icon">⌕</div>
+          <h3>No matching properties found</h3>
+          <p>Try changing your filters or searching a different location.</p>
+          <button type="button" class="btn btn-gold" id="resetFromEmpty">Show All Properties</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="map-section" id="map-section">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">EXPLORE THE NEIGHBOURHOOD</span>
+            <h2>Find Your Place <em>on the Map</em></h2>
+          </div>
+          <p>Explore the approximate locations of our sample listings.</p>
+        </div>
+
+        <div class="map-card">
+          <div id="propertyMap" aria-label="Interactive property map"></div>
+          <p class="map-disclaimer">
+            Map pins show approximate demonstration locations, not verified property addresses.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section" id="about">
+      <div class="container about-grid">
+        <div class="about-visual">
+          <img
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85"
+            alt="Modern luxury home with elegant architecture"
+            loading="lazy"
+          >
+          <div class="about-stamp">
+            <span>YOUR</span>
+            <strong>HOME</strong>
+            <span>YOUR STORY</span>
+          </div>
+        </div>
+
+        <div class="about-copy">
+          <span class="eyebrow">MORE THAN FOUR WALLS</span>
+          <h2>Every great story<br>needs a place to <em>begin.</em></h2>
+          <p>
+            Finding a property is about more than price and appearance.
+            It's about choosing a location, a lifestyle, and a future that
+            feels right for you.
+          </p>
+          <p>
+            HAVEN & CO. is a real estate website concept designed to make
+            property discovery clear, elegant, and convenient.
+          </p>
+          <a href="#contact" class="btn btn-gold">Let's Talk Properties ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+      <div class="container">
+        <div class="contact-box">
+          <div>
+            <span class="eyebrow">YOUR NEXT MOVE STARTS HERE</span>
+            <h2>Ready to find your <em>haven?</em></h2>
+            <p>Tell us what you're looking for and let's start the conversation.</p>
+          </div>
+          <a href="#" id="contactWhatsApp" class="btn btn-gold" target="_blank" rel="noopener">
+            Chat on WhatsApp ↗
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="#home" class="logo">HAVEN <span>&</span> CO.</a>
+      <p>Find your place. Begin your story.</p>
+      <span>© <span id="currentYear"></span> HAVEN & CO. Realty</span>
     </div>
-
-    <p id="listingCount" class="location" style="margin-bottom:20px">Showing all demo properties</p>
-
-    <div class="property-grid" id="propertyGrid">
-
-      <article class="property-card" data-type="villa" data-location="lagos" data-purpose="sale" data-price="185000000" data-bedrooms="5">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">Featured</span><span class="price-tag">₦185M</span>
-        </div>
-        <div class="property-info">
-          <h3>The Haven Villa</h3><p class="location">Lekki, Lagos · Sample location</p>
-          <div class="features"><span>🛏 5 beds</span><span>🛁 5 baths</span><span>⌂ Villa</span></div>
-          <div class="property-footer"><span class="location">For sale</span><button class="details-button" data-index="0">EXPLORE HOUSE ↗</button></div>
-        </div>
-      </article>
-
-      <article class="property-card" data-type="apartment" data-location="lagos" data-purpose="rent" data-price="3500000" data-bedrooms="3">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">Modern living</span><span class="price-tag">₦3.5M/yr</span>
-        </div>
-        <div class="property-info">
-          <h3>Skyline Residence</h3><p class="location">Victoria Island, Lagos · Sample location</p>
-          <div class="features"><span>🛏 3 beds</span><span>🛁 3 baths</span><span>⌂ Apartment</span></div>
-          <div class="property-footer"><span class="location">For rent</span><button class="details-button" data-index="1">EXPLORE HOUSE ↗</button></div>
-        </div>
-      </article>
-
-      <article class="property-card" data-type="house" data-location="lagos" data-purpose="sale" data-price="95000000" data-bedrooms="4">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">Family home</span><span class="price-tag">₦95M</span>
-        </div>
-        <div class="property-info">
-          <h3>Willow Family House</h3><p class="location">Ikeja, Lagos · Sample location</p>
-          <div class="features"><span>🛏 4 beds</span><span>🛁 4 baths</span><span>⌂ House</span></div>
-          <div class="property-footer"><span class="location">For sale</span><button class="details-button" data-index="2">EXPLORE HOUSE ↗</button></div>
-        </div>
-      </article>
-
-      <article class="property-card" data-type="villa" data-location="abuja" data-purpose="sale" data-price="220000000" data-bedrooms="5">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">Luxury collection</span><span class="price-tag">₦220M</span>
-        </div>
-        <div class="property-info">
-          <h3>Royal Garden Villa</h3><p class="location">Maitama, Abuja · Sample location</p>
-          <div class="features"><span>🛏 5 beds</span><span>🛁 6 baths</span><span>⌂ Villa</span></div>
-          <div class="property-footer"><span class="location">For sale</span><button class="details-button" data-index="3">EXPLORE HOUSE ↗</button></div>
-        </div>
-      </article>
-
-      <article class="property-card" data-type="apartment" data-location="owerri" data-purpose="rent" data-price="1200000" data-bedrooms="2">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">City comfort</span><span class="price-tag">₦1.2M/yr</span>
-        </div>
-        <div class="property-info">
-          <h3>Emerald Apartment</h3><p class="location">New Owerri, Imo · Sample location</p>
-          <div class="features"><span>🛏 2 beds</span><span>🛁 2 baths</span><span>⌂ Apartment</span></div>
-          <div class="property-footer"><span class="location">For rent</span><button class="details-button" data-index="4">EXPLORE HOUSE ↗</button></div>
-        </div>
-      </article>
-
-      <article class="property-card" data-type="land" data-location="epe" data-purpose="sale" data-price="15000000" data-bedrooms="0">
-        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=85')">
-          <span class="badge">Investment</span><span class="price-tag">₦15M</span>
-        </div>
-        <div class="property-info">
-          <h3>Greenfield Plot</h3><p class="location">Epe, Lagos · Sample location</p>
-          <div class="features"><span>🌿 Land</span><span>⌂ Plot</span></div>
-          <div class="property-footer"><span class="location">For sale</span><button class="details-button" data-index="5">EXPLORE PROPERTY ↗</button></div>
-        </div>
-      </article>
-
+    <div class="container footer-disclaimer">
+      Demonstration website. Sample listings and availability are not verified.
     </div>
+  </footer>
 
-    <div id="noResults"><h3>No matching properties</h3><p>Try changing your filters.</p></div>
-  </div>
-</section>
+  <!-- Property details popup -->
+  <div class="modal" id="propertyModal" aria-hidden="true">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
 
-<section class="section about-section" id="about">
-  <div class="container about-grid">
-    <div class="about-photo"></div>
-    <div class="about-copy">
-      <span class="eyebrow">The HAVEN experience</span>
-      <h2>A home should feel like <em>you.</em></h2>
-      <p>Finding a property is about more than walls and windows. It's about the people, moments and possibilities that make a place special. HAVEN helps you explore properties around your needs and plans.</p>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" type="button" aria-label="Close details">×</button>
 
-      <div class="about-points">
-        <div><strong>01 — Personalised</strong><p>Explore options matching your priorities.</p></div>
-        <div><strong>02 — Thoughtful</strong><p>Compare spaces and budgets.</p></div>
-        <div><strong>03 — Convenient</strong><p>Send enquiries from one place.</p></div>
-        <div><strong>04 — Lifestyle-led</strong><p>Make room for your next chapter.</p></div>
+      <div id="modalGallery" class="modal-gallery"></div>
+
+      <div class="modal-details">
+        <span id="modalBadge" class="eyebrow"></span>
+        <h2 id="modalTitle">Property Details</h2>
+        <p id="modalLocation" class="property-location"></p>
+        <h3 id="modalPrice" class="property-price"></h3>
+        <div id="modalFeatures" class="modal-features"></div>
+        <p id="modalDescription"></p>
+        <div class="modal-address">
+          <strong>Property address</strong>
+          <p id="modalAddress"></p>
+        </div>
+        <a id="modalWhatsApp" href="#" target="_blank" rel="noopener" class="btn btn-gold">
+          Enquire on WhatsApp ↗
+        </a>
       </div>
     </div>
   </div>
-</section>
-
-<section class="section" id="services">
-  <div class="container">
-    <div class="section-heading">
-      <span class="eyebrow">How we help</span>
-      <h2>Your property journey, <em>simplified.</em></h2>
-      <p>Sample services to customise for the real estate business.</p>
-    </div>
-
-    <div class="services-grid">
-      <article class="service-card"><span>⌂</span><h3>Find a Home</h3><p>Explore houses, apartments and properties based on your location and budget.</p></article>
-      <article class="service-card"><span>◇</span><h3>Property Sales</h3><p>Browse properties and contact the team to discuss details.</p></article>
-      <article class="service-card"><span>✧</span><h3>Rental Search</h3><p>Compare sample rentals and share your requirements.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="section values-section">
-  <div class="container">
-    <div class="section-heading">
-      <span class="eyebrow">The HAVEN promise</span>
-      <h2>Every great journey starts <em>somewhere.</em></h2>
-      <p>We believe discovering property should feel clear, personal and inspiring.</p>
-    </div>
-
-    <div class="values-grid">
-      <article class="value-card"><span>01</span><h3>Trust</h3><p>Property information should be checked and clearly presented.</p></article>
-      <article class="value-card"><span>02</span><h3>Comfort</h3><p>Discover spaces that work for your life and preferences.</p></article>
-      <article class="value-card"><span>03</span><h3>Clarity</h3><p>Understand your options before arranging a viewing.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="contact">
-  <div class="container contact-grid">
-    <div class="contact-copy">
-      <span class="eyebrow">Let's talk property</span>
-      <h2>Tell us what <em>home means to you.</em></h2>
-      <p>Share your requirements and send your enquiry to the HAVEN team through WhatsApp.</p>
-    </div>
-
-    <form class="contact-form" id="contactForm">
-      <div class="finder-grid" style="margin-top:0">
-        <div class="field"><label for="contactName">Your name</label><input id="contactName" required placeholder="Full name"></div>
-        <div class="field"><label for="contactPhone">Phone</label><input id="contactPhone" required type="tel" placeholder="Phone number"></div>
-      </div>
-      <div class="field" style="margin-top:17px"><label for="contactMessage">Your requirements</label><textarea id="contactMessage" required placeholder="Property type, location, budget..."></textarea></div>
-      <button class="primary" type="submit">SEND ENQUIRY ON WHATSAPP ↗</button>
-    </form>
-  </div>
-</section>
-</main>
-
-<footer>
-  <div class="footer-grid">
-    <div><div class="footer-logo">HAVEN<span class="gold">.</span></div><p>Discover a place that feels like yours. Explore property possibilities with HAVEN.</p></div>
-    <div><h4>EXPLORE</h4><a href="#home">Home</a><a href="#finder">Find a home</a><a href="#properties">Properties</a><a href="#about">About</a></div>
-    <div><h4>CONNECT</h4><a href="#services">Services</a><a href="#contact">Contact the team</a><a href="#finder">Property finder</a></div>
-  </div>
-  <div class="footer-bottom">© <span id="year"></span> HAVEN Real Estate. All rights reserved.<br>Demo prices, images and property details must be verified before publication.</div>
-</footer>
-
-<a href="#contact" class="whatsapp-float">WhatsApp ↗</a>
-
-<!-- PROPERTY GALLERY MODAL -->
-<div class="modal" id="propertyModal" role="dialog" aria-modal="true">
-  <div class="modal-box">
-    <button class="modal-close" id="modalClose" aria-label="Close">×</button>
-
-    <div class="gallery-stage" id="galleryStage">
-      <div class="gallery-image" id="galleryImage"></div>
-      <span class="gallery-count" id="galleryCount">1 / 7</span>
-      <button class="gallery-arrow gallery-prev" id="galleryPrev" aria-label="Previous image">‹</button>
-      <button class="gallery-arrow gallery-next" id="galleryNext" aria-label="Next image">›</button>
-      <div class="gallery-dots" id="galleryDots"></div>
-      <div class="gallery-thumbnails" id="galleryThumbnails"></div>
-    </div>
-
-    <div class="modal-body">
-      <span class="eyebrow" id="modalLocation"></span>
-      <h2 id="modalTitle"></h2>
-      <p id="modalDescription"></p>
-      <div class="modal-info" id="modalInfo"></div>
-      <button class="primary" id="modalEnquire">ENQUIRE ABOUT THIS PROPERTY ↗</button>
-    </div>
-  </div>
-</div>
-<script>
-/* CHANGE THIS TO THE OWNER'S WHATSAPP NUMBER */
-const HAVEN_WHATSAPP = "2348104959223";
-
-/* CINEMATIC INTRO */
-const intro = document.getElementById("intro");
-let introDone = false;
-
-function enterHaven() {
-  if (introDone) return;
-  introDone = true;
-
-  intro.classList.add("entering");
-
-  setTimeout(() => {
-    intro.classList.add("gone");
-    document.body.classList.remove("locked");
-  }, 1800);
-}
-
-document.getElementById("enterButton")
-  .addEventListener("click", enterHaven);
-
-setTimeout(() => {
-  if (!introDone) enterHaven();
-}, 9000);
-
-/* MOBILE MENU */
-const menuButton = document.getElementById("menuButton");
-const navLinks = document.getElementById("navLinks");
-
-menuButton.addEventListener("click", () => {
-  navLinks.classList.toggle("open");
-  menuButton.textContent =
-    navLinks.classList.contains("open") ? "×" : "☰";
-});
-
-navLinks.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    navLinks.classList.remove("open");
-    menuButton.textContent = "☰";
-  });
-});
-
-/* PROPERTY PHOTO SETS */
-const photoIDs = [
-  [
-    "photo-1600585154340-be6161a56a0c",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600566753086-00f18fb6b3ea",
-    "photo-1600566753190-17f0baa2a6c3",
-    "photo-1600047509807-ba8f99d2cdde"
-  ],
-  [
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600566753086-00f18fb6b3ea",
-    "photo-1600566753190-17f0baa2a6c3",
-    "photo-1600585154340-be6161a56a0c",
-    "photo-1600047509807-ba8f99d2cdde"
-  ],
-  [
-    "photo-1600566753086-00f18fb6b3ea",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600566753190-17f0baa2a6c3",
-    "photo-1600585154340-be6161a56a0c",
-    "photo-1600047509807-ba8f99d2cdde"
-  ],
-  [
-    "photo-1600047509807-ba8f99d2cdde",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600566753086-00f18fb6b3ea",
-    "photo-1600566753190-17f0baa2a6c3",
-    "photo-1600585154340-be6161a56a0c"
-  ],
-  [
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600566753086-00f18fb6b3ea",
-    "photo-1600566753190-17f0baa2a6c3",
-    "photo-1600585154340-be6161a56a0c",
-    "photo-1600047509807-ba8f99d2cdde"
-  ],
-  [
-    "photo-1500382017468-9049fed747ef",
-    "photo-1600585154340-be6161a56a0c",
-    "photo-1600047509807-ba8f99d2cdde",
-    "photo-1600210492486-724fe5c67fb0",
-    "photo-1600607687939-ce8a6c25118c",
-    "photo-1600607687920-4e2a09cf159d",
-    "photo-1600566753086-00f18fb6b3ea"
-  ]
-];
-
-function makePhotoURL(id) {
-  return "https://images.unsplash.com/" + id +
-    "?auto=format&fit=crop&w=1200&q=85";
-}
-
-/* PROPERTY DATA */
-const properties = [
-  {
-    title:"The Haven Villa",
-    location:"Lekki, Lagos",
-    price:"₦185,000,000 — demo price",
-    type:"Villa",
-    beds:"5 bedrooms",
-    description:"Sample villa listing. Confirm the actual features, price, location and availability with the owner."
-  },
-  {
-    title:"Skyline Residence",
-    location:"Victoria Island, Lagos",
-    price:"₦3,500,000 per year — demo price",
-    type:"Apartment",
-    beds:"3 bedrooms",
-    description:"Sample apartment listing. Confirm the actual rental terms and availability with the owner."
-  },
-  {
-    title:"Willow Family House",
-    location:"Ikeja, Lagos",
-    price:"₦95,000,000 — demo price",
-    type:"House",
-    beds:"4 bedrooms",
-    description:"Sample family home listing. Confirm the actual property details before making a decision."
-  },
-  {
-    title:"Royal Garden Villa",
-    location:"Maitama, Abuja",
-    price:"₦220,000,000 — demo price",
-    type:"Villa",
-    beds:"5 bedrooms",
-    description:"Sample luxury villa listing. Contact the owner to verify the actual details."
-  },
-  {
-    title:"Emerald Apartment",
-    location:"New Owerri, Imo",
-    price:"₦1,200,000 per year — demo price",
-    type:"Apartment",
-    beds:"2 bedrooms",
-    description:"Sample apartment listing. Verify the address, rent and availability."
-  },
-  {
-    title:"Greenfield Plot",
-    location:"Epe, Lagos",
-    price:"₦15,000,000 — demo price",
-    type:"Land",
-    beds:"Land",
-    description:"Sample land listing. Independently verify the location, ownership and title documents."
-  }
-];
-
-properties.forEach((property,index) => {
-  property.images = photoIDs[index].map(makePhotoURL);
-});
-
-/* GALLERY */
-const modal = document.getElementById("propertyModal");
-const galleryImage = document.getElementById("galleryImage");
-const galleryCount = document.getElementById("galleryCount");
-const galleryDots = document.getElementById("galleryDots");
-const galleryThumbnails = document.getElementById("galleryThumbnails");
-
-let activeProperty = null;
-let activePhoto = 0;
-
-function showPhoto(index) {
-  if (!activeProperty) return;
-
-  const total = activeProperty.images.length;
-  activePhoto = (index + total) % total;
-
-  galleryImage.style.backgroundImage =
-    "url('" + activeProperty.images[activePhoto] + "')";
-
-  galleryCount.textContent = (activePhoto + 1) + " / " + total;
-
-  galleryDots.querySelectorAll("button").forEach((dot,i) => {
-    dot.classList.toggle("active",i === activePhoto);
-  });
-
-  galleryThumbnails.querySelectorAll("button").forEach((thumb,i) => {
-    thumb.classList.toggle("active",i === activePhoto);
-  });
-}
-
-function openProperty(index) {
-  const property = properties[index];
-  if (!property) return;
-
-  activeProperty = property;
-  activePhoto = 0;
-
-  document.getElementById("modalLocation").textContent =
-    property.location;
-  document.getElementById("modalTitle").textContent =
-    property.title;
-  document.getElementById("modalDescription").textContent =
-    property.description;
-  document.getElementById("modalInfo").textContent =
-    property.type + " • " + property.beds + " • " + property.price;
-
-  galleryDots.innerHTML = "";
-  galleryThumbnails.innerHTML = "";
-
-  property.images.forEach((image,index) => {
-    const dot = document.createElement("button");
-    dot.className = "gallery-dot";
-    dot.setAttribute("aria-label","Picture " + (index + 1));
-    dot.addEventListener("click",() => showPhoto(index));
-    galleryDots.appendChild(dot);
-
-    const thumb = document.createElement("button");
-    thumb.className = "gallery-thumb";
-    thumb.style.backgroundImage = "url('" + image + "')";
-    thumb.setAttribute("aria-label","View picture " + (index + 1));
-    thumb.addEventListener("click",() => showPhoto(index));
-    galleryThumbnails.appendChild(thumb);
-  });
-
-  showPhoto(0);
-  modal.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-
-function closeProperty() {
-  modal.classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-document.querySelectorAll(".details-button").forEach(button => {
-  button.addEventListener("click",() => {
-    openProperty(Number(button.dataset.index));
-  });
-});
-
-document.getElementById("galleryPrev").addEventListener("click",() => {
-  showPhoto(activePhoto - 1);
-});
-
-document.getElementById("galleryNext").addEventListener("click",() => {
-  showPhoto(activePhoto + 1);
-});
-
-document.getElementById("modalClose").addEventListener("click",closeProperty);
-
-modal.addEventListener("click",event => {
-  if (event.target === modal) closeProperty();
-});
-
-document.addEventListener("keydown",event => {
-  if (!modal.classList.contains("open")) return;
-  if (event.key === "Escape") closeProperty();
-  if (event.key === "ArrowLeft") showPhoto(activePhoto - 1);
-  if (event.key === "ArrowRight") showPhoto(activePhoto + 1);
-});
-
-/* SWIPE GALLERY ON PHONES */
-let touchStartX = 0;
-
-document.getElementById("galleryStage").addEventListener("touchstart",event => {
-  touchStartX = event.changedTouches[0].screenX;
-},{passive:true});
-
-document.getElementById("galleryStage").addEventListener("touchend",event => {
-  const difference = event.changedTouches[0].screenX - touchStartX;
-  if (Math.abs(difference) < 45) return;
-  showPhoto(activePhoto + (difference < 0 ? 1 : -1));
-},{passive:true});
-
-/* PROPERTY FILTERS */
-const searchForm = document.getElementById("searchForm");
-const cards = Array.from(document.querySelectorAll(".property-card"));
-
-searchForm.addEventListener("submit",event => {
-  event.preventDefault();
-
-  const type = document.getElementById("propertyType").value;
-  const location = document.getElementById("propertyLocation").value;
-  const purpose = document.getElementById("propertyPurpose").value;
-  const minText = document.getElementById("minBudget").value;
-  const maxText = document.getElementById("maxBudget").value;
-  const min = minText === "" ? 0 : Number(minText);
-  const max = maxText === "" ? Infinity : Number(maxText);
-  const beds = Number(document.getElementById("bedrooms").value);
-  const message = document.getElementById("searchMessage");
-
-  if (min < 0 || max < 0 || min > max) {
-    message.textContent = "Please check your minimum and maximum budget.";
-    return;
-  }
-
-  let count = 0;
-
-  cards.forEach(card => {
-    const price = Number(card.dataset.price);
-    const cardBeds = Number(card.dataset.bedrooms);
-
-    const matches =
-      (type === "all" || card.dataset.type === type) &&
-      (location === "all" || card.dataset.location === location) &&
-      (purpose === "all" || card.dataset.purpose === purpose) &&
-      price >= min && price <= max &&
-      (beds === 0 || (cardBeds > 0 && cardBeds >= beds));
-
-    card.style.display = matches ? "" : "none";
-    if (matches) count++;
-  });
-
-  document.getElementById("listingCount").textContent =
-    "Showing " + count + " matching demo properties";
-
-  document.getElementById("noResults").style.display =
-    count === 0 ? "block" : "none";
-
-  message.textContent = count
-    ? "Found " + count + " matching demo properties. Verify availability with the owner."
-    : "No matches. Try changing your preferences.";
-
-  document.getElementById("properties").scrollIntoView({
-    behavior:"smooth",
-    block:"start"
-  });
-});
-
-document.getElementById("clearSearch").addEventListener("click",() => {
-  setTimeout(() => {
-    cards.forEach(card => card.style.display = "");
-    document.getElementById("listingCount").textContent =
-      "Showing all demo properties";
-    document.getElementById("noResults").style.display = "none";
-    document.getElementById("searchMessage").textContent = "";
-  },0);
-});
-
-/* WHATSAPP */
-function sendWhatsApp(message) {
-  const number = HAVEN_WHATSAPP.replace(/\D/g,"");
-
-  if (!number || number.length < 10) {
-    alert("Please set the correct WhatsApp number first.");
-    return;
-  }
-
-  window.open(
-    "https://wa.me/" + number + "?text=" + encodeURIComponent(message),
-    "_blank"
-  );
-}
-
-document.getElementById("modalEnquire").addEventListener("click",() => {
-  if (!activeProperty) return;
-
-  sendWhatsApp(
-    "Hello HAVEN! I am interested in:\n" +
-    activeProperty.title + "\n" +
-    "Location: " + activeProperty.location + "\n" +
-    "Displayed demo price: " + activeProperty.price + "\n" +
-    "Please confirm the actual details and availability."
-  );
-});
-
-document.getElementById("contactForm").addEventListener("submit",event => {
-  event.preventDefault();
-
-  const name = document.getElementById("contactName").value.trim();
-  const phone = document.getElementById("contactPhone").value.trim();
-  const message = document.getElementById("contactMessage").value.trim();
-
-  sendWhatsApp(
-    "Hello HAVEN!\nName: " + name +
-    "\nPhone: " + phone +
-    "\nProperty requirements: " + message
-  );
-});
-
-document.querySelector(".whatsapp-float").addEventListener("click",event => {
-  event.preventDefault();
-  sendWhatsApp("Hello HAVEN! I would like help finding a property.");
-});
-
-/* FOOTER */
-document.getElementById("year").textContent = new Date().getFullYear();
-</script>
+    <!-- Leaflet map library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    /*
+      HAVEN & CO. REALTY
+      Demonstration property website.
+      Replace sample properties and WhatsApp number before using for a real business.
+    */
+
+    // CHANGE THIS to the real business WhatsApp number.
+    // Use country code and numbers only: Nigeria example 2348012345678
+    const WHATSAPP_NUMBER = "2348012345678";
+
+    // Sample property listings. These are demonstrations, not verified listings.
+    const properties = [
+      {
+        id: 1,
+        title: "The Maitama Residence",
+        type: "House",
+        purpose: "Sale",
+        price: 185000000,
+        bedrooms: 5,
+        bathrooms: 5,
+        area: "Maitama",
+        city: "Abuja",
+        state: "Abuja",
+        street: "Maitama District",
+        address: "Maitama District, Abuja, Nigeria",
+        lat: 9.0935,
+        lng: 7.4951,
+        description: "A spacious contemporary residence concept with elegant interiors, generous living areas, and a refined modern design.",
+        images: [
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85"
+        ]
+      },
+      {
+        id: 2,
+        title: "Lekki Modern Duplex",
+        type: "Duplex",
+        purpose: "Sale",
+        price: 145000000,
+        bedrooms: 4,
+        bathrooms: 4,
+        area: "Lekki Phase 1",
+        city: "Lekki",
+        state: "Lagos",
+        street: "Lekki Phase 1",
+        address: "Lekki Phase 1, Lagos, Nigeria",
+        lat: 6.4474,
+        lng: 3.4723,
+        description: "A modern duplex concept featuring stylish living spaces, a contemporary kitchen, and a comfortable residential layout.",
+        images: [
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85"
+        ]
+      },
+      {
+        id: 3,
+        title: "Victoria Island Luxury Apartment",
+        type: "Apartment",
+        purpose: "Rent",
+        price: 12000000,
+        bedrooms: 3,
+        bathrooms: 3,
+        area: "Victoria Island",
+        city: "Victoria Island",
+        state: "Lagos",
+        street: "Victoria Island",
+        address: "Victoria Island, Lagos, Nigeria",
+        lat: 6.4281,
+        lng: 3.4219,
+        description: "A luxury apartment concept with bright interiors, elegant finishes, and a convenient location for city living.",
+        images: [
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85"
+        ]
+      },
+      {
+        id: 4,
+        title: "Ikeja Family Home",
+        type: "House",
+        purpose: "Sale",
+        price: 95000000,
+        bedrooms: 4,
+        bathrooms: 4,
+        area: "Ikeja GRA",
+        city: "Ikeja",
+        state: "Lagos",
+        street: "Ikeja GRA",
+        address: "Ikeja GRA, Lagos, Nigeria",
+        lat: 6.6018,
+        lng: 3.3515,
+        description: "A family home concept with multiple bedrooms, generous shared spaces, and a practical modern layout.",
+        images: [
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85"
+        ]
+      },
+      {
+        id: 5,
+        title: "New Owerri Executive Home",
+        type: "Duplex",
+        purpose: "Sale",
+        price: 78000000,
+        bedrooms: 4,
+        bathrooms: 4,
+        area: "New Owerri",
+        city: "Owerri",
+        state: "Imo",
+        street: "New Owerri",
+        address: "New Owerri, Owerri, Imo State, Nigeria",
+        lat: 5.4836,
+        lng: 7.0333,
+        description: "An executive residential property concept with spacious rooms and a clean contemporary style.",
+        images: [
+          "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=85"
+        ]
+      },
+      {
+        id: 6,
+        title: "Epe Residential Land",
+        type: "Land",
+        purpose: "Sale",
+        price: 18000000,
+        bedrooms: 0,
+        bathrooms: 0,
+        area: "Epe",
+        city: "Epe",
+        state: "Lagos",
+        street: "Epe",
+        address: "Epe, Lagos State, Nigeria",
+        lat: 6.5841,
+        lng: 3.9834,
+        description: "A sample land listing for visitors exploring potential residential investment opportunities. Verify title, survey, boundaries, and availability before any transaction.",
+        images: [
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85"
+        ]
+      }
+    ];
+
+    let selectedPurpose = "All";
+    let filteredProperties = [...properties];
+    let map = null;
+    let markerLayer = null;
+
+    const grid = document.getElementById("propertyGrid");
+    const listingCount = document.getElementById("listingCount");
+    const noResults = document.getElementById("noResults");
+    const searchForm = document.getElementById("searchForm");
+    const searchMessage = document.getElementById("searchMessage");
+    const modal = document.getElementById("propertyModal");
+
+    // Format prices in Nigerian naira.
+    function formatPrice(price) {
+      return "₦" + Number(price).toLocaleString("en-NG");
+    }
+
+    function priceLabel(property) {
+      if (property.purpose === "Rent") {
+        return formatPrice(property.price) + " / year";
+      }
+      return formatPrice(property.price);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, function (char) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[char];
+      });
+    }
+
+    function whatsappLink(message) {
+      return "https://wa.me/" + WHATSAPP_NUMBER +
+        "?text=" + encodeURIComponent(message);
+    }
+
+    function propertyLocation(property) {
+      return [
+        property.street,
+        property.area,
+        property.city,
+        property.state
+      ].filter(Boolean).filter((value, index, array) => {
+        return array.findIndex(
+          item => item.toLowerCase() === value.toLowerCase()
+        ) === index;
+      }).join(", ");
+    }
+
+    function propertyCard(property) {
+      const image = property.images[0];
+
+      const features = property.type === "Land"
+        ? `<span>Land</span><span>Investment</span>`
+        : `<span>🛏 ${property.bedrooms} Beds</span><span>🛁 ${property.bathrooms} Baths</span>`;
+
+      return `
+        <article class="property-card">
+          <div class="property-image">
+            <img
+              src="${escapeHTML(image)}"
+              alt="${escapeHTML(property.title)}"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <span class="property-badge">${escapeHTML(property.purpose === "Rent" ? "FOR RENT" : "FOR SALE")}</span>
+            <button
+              type="button"
+              class="favorite-btn"
+              aria-label="View ${escapeHTML(property.title)} details"
+              data-details="${property.id}"
+            >♡</button>
+          </div>
+
+          <div class="property-info">
+            <p class="property-location">⌖ ${escapeHTML(propertyLocation(property))}</p>
+            <h3 class="property-title">${escapeHTML(property.title)}</h3>
+            <p class="property-price">${escapeHTML(priceLabel(property))}</p>
+
+            <div class="property-features">
+              <span>${escapeHTML(property.type)}</span>
+              ${features}
+            </div>
+
+            <div class="property-actions">
+              <button type="button" class="btn btn-light details-btn" data-details="${property.id}">
+                View Details
+              </button>
+              <a
+                class="btn btn-gold"
+                href="${escapeHTML(whatsappLink("Hello, I would like to enquire about " + property.title + " (" + propertyLocation(property) + "). Please confirm the price, availability, and full details."))}"
+                target="_blank"
+                rel="noopener"
+              >Enquire ↗</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProperties(list) {
+      filteredProperties = [...list];
+
+      grid.innerHTML = list.map(propertyCard).join("");
+
+      listingCount.textContent =
+        list.length + (list.length === 1 ? " property found" : " properties found");
+
+      noResults.hidden = list.length !== 0;
+      grid.hidden = list.length === 0;
+
+      updateMap(list);
+    }
+
+    // Open the property detail popup with its photo gallery.
+    function openPropertyDetails(id) {
+      const property = properties.find(item => item.id === Number(id));
+      if (!property) return;
+
+      document.getElementById("modalBadge").textContent =
+        property.purpose === "Rent" ? "PROPERTY FOR RENT" : "PROPERTY FOR SALE";
+
+      document.getElementById("modalTitle").textContent = property.title;
+      document.getElementById("modalLocation").textContent = "⌖ " + propertyLocation(property);
+      document.getElementById("modalPrice").textContent = priceLabel(property);
+      document.getElementById("modalDescription").textContent = property.description;
+      document.getElementById("modalAddress").textContent = property.address;
+
+      const features = property.type === "Land"
+        ? `<span>Property type: Land</span>`
+        : `
+          <span>Type: ${escapeHTML(property.type)}</span>
+          <span>Bedrooms: ${property.bedrooms}</span>
+          <span>Bathrooms: ${property.bathrooms}</span>
+        `;
+
+      document.getElementById("modalFeatures").innerHTML = features;
+
+      const gallery = document.getElementById("modalGallery");
+
+      gallery.innerHTML = `
+        <div class="gallery-main">
+          <img id="galleryMainImage" src="${escapeHTML(property.images[0])}" alt="${escapeHTML(property.title)}">
+        </div>
+        <div class="gallery-thumbs">
+          ${property.images.map((image, index) => `
+            <button type="button" class="gallery-thumb ${index === 0 ? "active" : ""}" data-image-index="${index}" aria-label="View photo ${index + 1}">
+              <img src="${escapeHTML(image)}" alt="Property photo ${index + 1}" loading="lazy">
+            </button>
+          `).join("")}
+        </div>
+        <p class="gallery-counter">Photo collection · ${property.images.length} images</p>
+      `;
+
+      gallery.querySelectorAll(".gallery-thumb").forEach(button => {
+        button.addEventListener("click", function () {
+          const index = Number(this.dataset.imageIndex);
+          const mainImage = document.getElementById("galleryMainImage");
+
+          mainImage.src = property.images[index];
+
+          gallery.querySelectorAll(".gallery-thumb").forEach(thumb => {
+            thumb.classList.remove("active");
+          });
+
+          this.classList.add("active");
+        });
+      });
+
+      document.getElementById("modalWhatsApp").href = whatsappLink(
+        "Hello, I would like more information about " +
+        property.title + " at " + property.address +
+        ". Please confirm availability and share verified property details."
+      );
+
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modalBackdrop").addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeModal();
+    });
+
+    grid.addEventListener("click", event => {
+      const button = event.target.closest("[data-details]");
+      if (button) openPropertyDetails(button.dataset.details);
+    });
+
+    // Search and filter properties.
+    function applyFilters(event) {
+      if (event) event.preventDefault();
+
+      const type = document.getElementById("propertyType").value.toLowerCase();
+      const purpose = document.getElementById("propertyPurpose").value || selectedPurpose;
+      const minBudget = Number(document.getElementById("minBudget").value) || 0;
+      const maxBudget = Number(document.getElementById("maxBudget").value) || Infinity;
+      const bedrooms = document.getElementById("bedrooms").value;
+
+      const state = document.getElementById("propertyLocation").value.trim().toLowerCase();
+      const city = document.getElementById("propertyCity").value.trim().toLowerCase();
+      const street = document.getElementById("propertyStreet").value.trim().toLowerCase();
+      const address = document.getElementById("propertyAddress").value.trim().toLowerCase();
+
+      if (minBudget > maxBudget) {
+        searchMessage.textContent = "Your minimum budget cannot be higher than your maximum budget.";
+        return;
+      }
+
+      const result = properties.filter(property => {
+        const searchableLocation = [
+          property.state,
+          property.city,
+          property.area,
+          property.street,
+          property.address
+        ].join(" ").toLowerCase();
+
+        const matchesType = !type || property.type.toLowerCase() === type;
+        const matchesPurpose = !purpose || purpose === "All" || property.purpose === purpose;
+        const matchesMin = property.price >= minBudget;
+        const matchesMax = property.price <= maxBudget;
+
+        const matchesBedrooms = !bedrooms ||
+          (bedrooms === "5"
+            ? property.bedrooms >= 5
+            : property.bedrooms === Number(bedrooms));
+
+        const matchesState = !state || property.state.toLowerCase().includes(state);
+        const matchesCity = !city || searchableLocation.includes(city);
+        const matchesStreet = !street || searchableLocation.includes(street);
+        const matchesAddress = !address || searchableLocation.includes(address);
+
+        return matchesType &&
+          matchesPurpose &&
+          matchesMin &&
+          matchesMax &&
+          matchesBedrooms &&
+          matchesState &&
+          matchesCity &&
+          matchesStreet &&
+          matchesAddress;
+      });
+
+      searchMessage.textContent = result.length
+        ? "Showing " + result.length + " matching sample listing(s)."
+        : "No sample properties match all those details. Try another location or adjust your filters.";
+
+      renderProperties(result);
+
+      document.getElementById("properties").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    searchForm.addEventListener("submit", applyFilters);
+
+    // Sale/rent tabs.
+    document.querySelectorAll(".search-tab").forEach(tab => {
+      tab.addEventListener("click", function () {
+        document.querySelectorAll(".search-tab").forEach(item => {
+          item.classList.remove("active");
+        });
+
+        this.classList.add("active");
+        selectedPurpose = this.dataset.purpose;
+
+        document.getElementById("propertyPurpose").value =
+          selectedPurpose === "All" ? "" : selectedPurpose;
+
+        applyFilters();
+      });
+    });
+
+    function clearFilters() {
+      searchForm.reset();
+      selectedPurpose = "All";
+
+      document.querySelectorAll(".search-tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.purpose === "All");
+      });
+
+      searchMessage.textContent = "";
+      renderProperties(properties);
+    }
+
+    document.getElementById("clearSearch").addEventListener("click", clearFilters);
+    document.getElementById("resetFromEmpty").addEventListener("click", clearFilters);
+
+    // Interactive map.
+    function initMap() {
+      const mapElement = document.getElementById("propertyMap");
+
+      if (!mapElement || typeof L === "undefined") {
+        mapElement.innerHTML =
+          "<p style='padding:20px'>The map could not load. Check your internet connection and refresh.</p>";
+        return;
+      }
+
+      map = L.map("propertyMap").setView([8.2, 6.5], 6);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(map);
+
+      markerLayer = L.layerGroup().addTo(map);
+
+      updateMap(properties);
+    }
+
+    function updateMap(list) {
+      if (!map || !markerLayer) return;
+
+      markerLayer.clearLayers();
+
+      const coordinates = [];
+
+      list.forEach(property => {
+        if (typeof property.lat !== "number" || typeof property.lng !== "number") {
+          return;
+        }
+
+        const marker = L.marker([property.lat, property.lng]).addTo(markerLayer);
+
+        marker.bindPopup(`
+          <div style="min-width:180px">
+            <strong>${escapeHTML(property.title)}</strong><br>
+            <span>${escapeHTML(propertyLocation(property))}</span><br>
+            <strong>${escapeHTML(priceLabel(property))}</strong><br>
+            <button
+              type="button"
+              onclick="openPropertyDetails(${property.id})"
+              style="margin-top:8px;padding:8px 12px;cursor:pointer"
+            >View property</button>
+          </div>
+        `);
+
+        coordinates.push([property.lat, property.lng]);
+      });
+
+      if (coordinates.length === 1) {
+        map.setView(coordinates[0], 13);
+      } else if (coordinates.length > 1) {
+        map.fitBounds(coordinates, { padding: [30, 30], maxZoom: 12 });
+      }
+    }
+
+    // Mobile navigation.
+    const menuToggle = document.getElementById("menuToggle");
+    const navLinks = document.getElementById("navLinks");
+
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("open");
+    });
+
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+      });
+    });
+
+    // Contact button.
+    document.getElementById("contactWhatsApp").href = whatsappLink(
+      "Hello, I found your real estate website and would like help finding a property."
+    );
+
+    document.getElementById("currentYear").textContent =
+      new Date().getFullYear();
+
+    // Make the property-detail function available to map popup buttons.
+    window.openPropertyDetails = openPropertyDetails;
+
+    // Start the website.
+    renderProperties(properties);
+    initMap();
+  </script>
 </body>
 </html>
