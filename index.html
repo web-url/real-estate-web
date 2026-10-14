@@ -1,778 +1,1925 @@
-code = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FF TRAINER 3D — Aim Training Room</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#102c25">
+<title>HAVEN | Find Your Place in the World</title>
+
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { width:100%; height:100%; overflow:hidden; background:#000; font-family:'Segoe UI',Arial,sans-serif; user-select:none; touch-action:none; }
-  #c3d { position:fixed; inset:0; }
-  #c2d { position:fixed; inset:0; pointer-events:none; z-index:30; }
+:root {
+  --green: #12372d;
+  --green2: #1d493b;
+  --gold: #c6a56b;
+  --cream: #f7f4ed;
+  --white: #fff;
+  --dark: #17201c;
+  --muted: #777f79;
+  --shadow: 0 18px 55px rgba(0,0,0,.11);
+}
 
-  /* ---------- Top bar ---------- */
-  #topbar { position:fixed; top:0; left:0; right:0; height:48px; display:flex; align-items:center; justify-content:space-between;
-    padding:0 12px; z-index:60; background:linear-gradient(180deg,rgba(0,0,0,.6),transparent); pointer-events:none; }
-  #topbar > * { pointer-events:auto; }
-  .tb-btn { background:#ffb300; color:#111; font-weight:800; border:none; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,.5); }
-  .tb-btn.dark { background:rgba(20,26,36,.9); color:#ffd54f; border:1px solid #3a4356; }
-  #cashBox { color:#ffd54f; font-weight:800; background:rgba(0,0,0,.55); padding:7px 13px; border-radius:20px; font-size:14px; }
-  #levelSel { background:rgba(20,26,36,.9); color:#fff; border:1px solid #3a4356; border-radius:6px; padding:8px 6px; font-size:12px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ---------- HUD controls ---------- */
-  #joyBase { position:fixed; width:120px; height:120px; border-radius:50%; z-index:45;
-    background:radial-gradient(circle, rgba(255,255,255,.06), rgba(255,255,255,.14));
-    border:2px solid rgba(255,255,255,.35); display:none; }
-  #joyKnob { position:fixed; width:52px; height:52px; border-radius:50%; z-index:46;
-    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), rgba(180,180,180,.6));
-    box-shadow:0 3px 10px rgba(0,0,0,.5); display:none; }
+html { scroll-behavior: smooth; }
 
-  #fireBtn { position:fixed; border-radius:50%; z-index:45; display:flex; align-items:center; justify-content:center;
-    background:radial-gradient(circle at 35% 30%, rgba(255,220,80,.95), rgba(190,110,0,.8));
-    border:3px solid rgba(255,255,255,.75); box-shadow:0 0 20px rgba(255,180,0,.5), inset 0 0 14px rgba(0,0,0,.35);
-    font-size:34px; touch-action:none; }
-  .hudbtn { position:fixed; z-index:44; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background:rgba(20,26,36,.75); border:2px solid rgba(255,255,255,.3); color:#fff; font-size:20px; touch-action:none; }
-  #btnJump { width:58px; height:58px; right:26px; bottom:210px; }
-  #btnReload { width:50px; height:50px; right:150px; bottom:120px; font-size:17px; }
-  #btnCrouch { width:50px; height:50px; right:56px; bottom:96px; font-size:17px; }
-  #btnLock { width:50px; height:50px; left:16px; top:60px; font-size:17px; border-radius:10px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  overflow-x: hidden;
+}
 
-  /* ---------- Crosshair ---------- */
-  #cross { position:fixed; left:50%; top:50%; width:36px; height:36px; margin:-18px 0 0 -18px; z-index:40; pointer-events:none; transition:transform .08s; }
-  #cross::before, #cross::after { content:''; position:absolute; background:#37ff8b; box-shadow:0 0 4px #000; }
-  #cross::before { left:50%; top:0; width:2px; height:100%; margin-left:-1px; clip-path:polygon(0 0,100% 0,100% 30%,0 30%,0 70%,100% 70%,100% 100%,0 100%); }
-  #cross::after { top:50%; left:0; height:2px; width:100%; margin-top:-1px; clip-path:polygon(0 0,30% 0,30% 100%,0 100%,70% 0,100% 0,100% 100%,70% 100%); }
-  #hitmark { position:fixed; left:50%; top:50%; width:40px; height:40px; margin:-20px 0 0 -20px; z-index:41; pointer-events:none; opacity:0; font-size:34px; color:#ffd54f; font-weight:900; text-align:center; line-height:40px; text-shadow:0 0 6px #000; }
+body.intro-active { overflow: hidden; }
 
-  /* ---------- Coach ---------- */
-  #coach { position:fixed; z-index:55; max-width:270px; background:rgba(8,12,20,.9); border:1px solid #37ff8b; border-radius:10px;
-    padding:10px 12px; color:#eafff2; font-size:12.5px; line-height:1.55; display:none; box-shadow:0 4px 18px rgba(0,0,0,.6); }
-  #coach b { color:#37ff8b; }
-  #coach .tag { display:inline-block; background:#37ff8b; color:#04140a; font-weight:800; font-size:10px; padding:2px 7px; border-radius:4px; margin-bottom:5px; }
+h1,h2,h3,.serif {
+  font-family: 'Playfair Display', serif;
+}
 
-  #hitToggle { position:fixed; left:12px; bottom:16px; z-index:55; display:flex; background:rgba(15,20,28,.85); border:1px solid #3a4356; border-radius:24px; overflow:hidden; }
-  #hitToggle button { border:none; background:transparent; color:#9aa7bb; padding:9px 15px; font-weight:800; font-size:11px; cursor:pointer; }
-  #hitToggle button.on { background:#37ff8b; color:#04140a; }
+button,input,select,textarea { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
 
-  #ammo { position:fixed; right:18px; top:58px; z-index:55; color:#fff; font-weight:800; font-size:14px; background:rgba(0,0,0,.5); padding:6px 12px; border-radius:8px; }
-  #wpnTag { position:fixed; right:18px; top:96px; z-index:55; color:#ffd54f; font-weight:700; font-size:11px; background:rgba(0,0,0,.4); padding:4px 10px; border-radius:6px; }
+.gold { color: var(--gold); }
 
-  /* ---------- Panels ---------- */
-  .panel { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.75); display:none; align-items:center; justify-content:center; }
-  .panel.open { display:flex; }
-  .card { width:min(580px,94vw); max-height:88vh; overflow-y:auto; background:#12161f; border:1px solid #2c3547; border-radius:14px; padding:22px; color:#dbe4f0; }
-  .card h2 { color:#ffd54f; font-size:19px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; }
-  .card h2 .x { cursor:pointer; color:#ff5a6a; font-size:22px; }
-  .card .sub { color:#7f8ba0; font-size:12px; margin-bottom:16px; }
-  .wgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
-  .wcard { background:#1a2130; border:1px solid #2c3547; border-radius:10px; padding:12px; cursor:pointer; }
-  .wcard:hover { border-color:#ffb300; }
-  .wcard.equipped { border-color:#37ff8b; box-shadow:0 0 10px rgba(55,255,139,.25); }
-  .wcard .wn { font-weight:800; color:#fff; font-size:14px; }
-  .wcard .ws { font-size:11px; color:#8fa0ba; margin:5px 0; line-height:1.55; }
-  .wcard .wp { color:#ffd54f; font-weight:700; font-size:13px; }
-  .row { display:flex; align-items:center; gap:12px; margin:14px 0; }
-  .row label { width:110px; font-size:13px; color:#aeb9cc; }
-  .row input[type=range] { flex:1; accent-color:#ffb300; }
-  .row .val { width:48px; text-align:right; color:#ffd54f; font-weight:700; font-size:13px; }
-  .btn { background:#ffb300; color:#111; border:none; border-radius:8px; padding:10px 18px; font-weight:800; cursor:pointer; font-size:13px; }
-  .btn.ghost { background:#1d232e; color:#ffd54f; border:1px solid #3a4356; }
-  .btn.green { background:#37ff8b; }
-  .btnrow { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-  textarea#hudCode { width:100%; height:64px; background:#0b0f16; color:#7fe7a8; border:1px solid #2c3547; border-radius:8px; padding:10px; font-size:11px; resize:none; }
-  .ai-box { background:#0d1420; border:1px solid #1f3a2c; border-radius:10px; padding:14px; margin-top:14px; font-size:12.5px; line-height:1.65; color:#bfe9cf; }
-  .ai-box .h { color:#37ff8b; font-weight:800; letter-spacing:.5px; font-size:11px; }
-  #toast { position:fixed; top:58px; left:50%; transform:translateX(-50%); z-index:210; background:#111827; color:#fff; border:1px solid #37ff8b;
-    padding:10px 20px; border-radius:24px; font-size:13px; display:none; box-shadow:0 6px 20px rgba(0,0,0,.6); }
+/* CINEMATIC INTRO */
+
+#cinematicIntro {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #080d0b;
+  color: white;
+  overflow: hidden;
+  perspective: 1200px;
+  transition: opacity 1s ease, visibility 1s ease;
+}
+
+#cinematicIntro.finished {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg,rgba(9,17,18,.08),rgba(0,0,0,.25) 45%,#080d0b 100%),
+    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2200&q=90')
+    center center / cover no-repeat;
+  transform: scale(1.04);
+  animation: skyArrival 12s ease forwards;
+}
+
+@keyframes skyArrival {
+  0%, 12% { transform: scale(1.04); }
+  62% { transform: scale(1.55); }
+  78%,100% { transform: scale(2.1); }
+}
+
+.intro-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.15),
+    rgba(0,0,0,.03) 35%,
+    rgba(0,0,0,.68)
+  );
+}
+
+.intro-top {
+  position: absolute;
+  top: 32px;
+  left: 7%;
+  right: 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  letter-spacing: 4px;
+  font-size: 12px;
+}
+
+.intro-top .logo {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 6px;
+}
+
+.intro-copy {
+  position: absolute;
+  bottom: 12%;
+  left: 8%;
+  right: 8%;
+  z-index: 6;
+  text-align: center;
+  transition: opacity .6s ease, transform .6s ease;
+}
+
+.intro-copy h1 {
+  font-size: clamp(38px,8vw,88px);
+  font-weight: 400;
+  line-height: 1.04;
+  margin: 12px 0 18px;
+}
+
+.intro-copy p {
+  color: rgba(255,255,255,.82);
+  font-size: 13px;
+  letter-spacing: 2px;
+  line-height: 1.8;
+}
+
+.intro-eyebrow {
+  color: #e5c88f;
+  letter-spacing: 5px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.intro-button {
+  border: 1px solid rgba(255,255,255,.6);
+  background: rgba(15,30,23,.35);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 15px 28px;
+  margin-top: 28px;
+  letter-spacing: 2px;
+  font-size: 10px;
+  transition: .3s;
+}
+
+.intro-button:hover {
+  background: var(--gold);
+  color: #111;
+  border-color: var(--gold);
+}
+
+.intro-progress {
+  width: 110px;
+  height: 2px;
+  background: rgba(255,255,255,.25);
+  margin: 25px auto 0;
+  overflow: hidden;
+}
+
+.intro-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--gold);
+  animation: progress 8s linear forwards;
+}
+
+@keyframes progress {
+  to { width: 100%; }
+}
+
+.intro-entering .intro-copy {
+  opacity: 0;
+  transform: scale(.7) translateY(30px);
+}
+
+.intro-entering .intro-sky {
+  animation: finalZoom 2.3s cubic-bezier(.5,0,.7,1) forwards;
+}
+
+@keyframes finalZoom {
+  to { transform: scale(3.5); filter: brightness(1.5); }
+}
+
+.intro-hint {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 6;
+  color: rgba(255,255,255,.6);
+  font-size: 9px;
+  letter-spacing: 3px;
+}
+
+/* MAIN NAVIGATION */
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(247,244,237,.95);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(18,55,45,.08);
+}
+
+.navbar {
+  max-width: 1300px;
+  margin: auto;
+  padding: 20px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  color: var(--green);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 6px;
+}
+
+.brand small {
+  display: block;
+  color: var(--gold);
+  font-size: 8px;
+  letter-spacing: 3px;
+  margin-top: 3px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 27px;
+  font-size: 12px;
+  color: #4c5750;
+}
+
+.nav-links a:hover { color: var(--gold); }
+
+.nav-cta,.primary-btn {
+  background: var(--green);
+  color: white;
+  border: 1px solid var(--green);
+  padding: 13px 19px;
+  font-size: 11px;
+  transition: .3s;
+}
+
+.nav-cta:hover,.primary-btn:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #111;
+}
+
+.menu-toggle {
+  display: none;
+  border: 0;
+  background: transparent;
+  font-size: 27px;
+  color: var(--green);
+}
+
+/* HERO */
+
+.hero {
+  max-width: 1500px;
+  min-height: 620px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 65px 7%;
+  gap: 45px;
+}
+
+.eyebrow {
+  color: #997b48;
+  letter-spacing: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.hero h1 {
+  color: var(--green);
+  font-size: clamp(43px,5.8vw,76px);
+  line-height: 1.08;
+  font-weight: 400;
+  margin: 22px 0;
+}
+
+.hero h1 em {
+  color: #a78955;
+  font-weight: 400;
+}
+
+.hero-text {
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 14px;
+  max-width: 440px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.secondary-btn {
+  border: 1px solid #c8c8bc;
+  padding: 13px 20px;
+  color: var(--green);
+  font-size: 11px;
+  background: transparent;
+}
+
+.hero-image-wrap {
+  position: relative;
+  min-height: 450px;
+}
+
+.hero-image {
+  position: absolute;
+  inset: 0 0 30px 35px;
+  background: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85') center/cover;
+  box-shadow: var(--shadow);
+}
+
+.hero-image-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 23px 28px;
+  background: var(--green);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.hero-image-tag small {
+  display: block;
+  color: #d9bd86;
+  letter-spacing: 2px;
+  font-size: 9px;
+  margin-bottom: 7px;
+}
+
+.hero-image-tag strong {
+  font-family: 'Playfair Display',serif;
+  font-size: 21px;
+  font-weight: 400;
+}
+
+/* TRUST STRIP */
+
+.trust-strip {
+  background: var(--green);
+  color: white;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  padding: 32px 6%;
+  gap: 15px;
+  text-align: center;
+}
+
+.trust-item strong {
+  display: block;
+  color: #e0c28a;
+  font-family: 'Playfair Display',serif;
+  font-size: 27px;
+  font-weight: 400;
+}
+
+.trust-item span {
+  display: block;
+  margin-top: 6px;
+  color: rgba(255,255,255,.7);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+/* SECTION COMMON */
+
+.section {
+  padding: 95px 7%;
+}
+
+.section-inner {
+  max-width: 1300px;
+  margin: auto;
+}
+
+.section-heading {
+  text-align: center;
+  max-width: 650px;
+  margin: 0 auto 45px;
+}
+
+.section-heading h2 {
+  font-size: clamp(32px,4vw,49px);
+  font-weight: 400;
+  color: var(--green);
+  margin: 15px 0;
+}
+
+.section-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* PROPERTY FINDER */
+
+.finder-section {
+  background: #eeece4;
+  padding: 90px 5%;
+}
+
+.finder-panel {
+  max-width: 1200px;
+  margin: auto;
+  background: white;
+  padding: clamp(22px,4vw,48px);
+  box-shadow: var(--shadow);
+}
+
+.finder-title {
+  margin-bottom: 28px;
+}
+
+.finder-title h2 {
+  font-size: clamp(30px,4vw,45px);
+  color: var(--green);
+  font-weight: 400;
+  margin: 10px 0;
+}
+
+.finder-title p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.finder-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 18px;
+}
+
+.field label {
+  display: block;
+  font-size: 10px;
+  color: #5f6a62;
+  font-weight: 700;
+  margin-bottom: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.field input,.field select,.field textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #dedfd8;
+  background: #fff;
+  padding: 12px;
+  border-radius: 0;
+  outline: none;
+  color: var(--dark);
+}
+
+.field input:focus,.field select:focus,.field textarea:focus {
+  border-color: var(--gold);
+}
+
+.finder-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.finder-actions .primary-btn {
+  min-height: 49px;
+  padding: 0 27px;
+}
+
+.clear-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px;
+}
+
+.finder-note {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 18px;
+  line-height: 1.7;
+}
+
+#searchFeedback {
+  color: var(--green);
+  font-size: 13px;
+  margin-top: 20px;
+  line-height: 1.7;
+}
+/* PROPERTY LISTINGS */
+
+.property-section { background: var(--cream); }
+
+.property-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.property-toolbar p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 25px;
+}
+
+.property-card {
+  background: white;
+  box-shadow: 0 8px 30px rgba(0,0,0,.045);
+  transition: transform .3s, box-shadow .3s;
+  overflow: hidden;
+}
+
+.property-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.property-photo {
+  position: relative;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+}
+
+.property-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 8px 11px;
+  background: var(--green);
+  color: white;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.property-price {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: var(--gold);
+  color: #171b16;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.property-content { padding: 23px; }
+
+.property-content h3 {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--green);
+  margin-bottom: 9px;
+}
+
+.property-location {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.property-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-top: 1px solid #ecece6;
+  border-bottom: 1px solid #ecece6;
+  padding: 15px 0;
+  margin: 18px 0;
+  font-size: 10px;
+  color: #566057;
+}
+
+.property-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.details-btn {
+  border: 0;
+  background: var(--green);
+  color: white;
+  padding: 12px 15px;
+  font-size: 10px;
+}
+
+.details-btn:hover { background: var(--gold); color: #111; }
+
+.no-results {
+  display: none;
+  text-align: center;
+  padding: 35px 15px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* ABOUT */
+
+.about-section {
+  background: #eae8df;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 65px;
+}
+
+.about-photo {
+  min-height: 490px;
+  background: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85') center/cover;
+  position: relative;
+}
+
+.about-photo-label {
+  position: absolute;
+  right: -18px;
+  bottom: 25px;
+  background: var(--gold);
+  padding: 24px;
+  color: #1b241d;
+  max-width: 200px;
+}
+
+.about-photo-label strong {
+  display: block;
+  font-family: 'Playfair Display',serif;
+  font-size: 29px;
+  font-weight: 400;
+}
+
+.about-photo-label span {
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.about-copy h2 {
+  color: var(--green);
+  font-size: clamp(34px,4vw,51px);
+  font-weight: 400;
+  line-height: 1.15;
+  margin: 17px 0 23px;
+}
+
+.about-copy > p {
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 13px;
+}
+
+.about-points {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 28px;
+}
+
+.about-point strong {
+  color: var(--green);
+  font-size: 13px;
+}
+
+.about-point p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-top: 7px;
+}
+
+/* SERVICES */
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 22px;
+}
+
+.service-card {
+  border: 1px solid #deded5;
+  padding: 32px 27px;
+  transition: .3s;
+}
+
+.service-card:hover {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+  transform: translateY(-5px);
+}
+
+.service-icon {
+  font-size: 29px;
+  margin-bottom: 24px;
+}
+
+.service-card h3 {
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 13px;
+}
+
+.service-card p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+
+.service-card:hover p { color: rgba(255,255,255,.75); }
+
+/* TESTIMONIALS */
+
+.testimonials-section {
+  background: var(--green);
+  color: white;
+}
+
+.testimonials-section .section-heading h2 { color: white; }
+.testimonials-section .section-heading p { color: rgba(255,255,255,.7); }
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 22px;
+}
+
+.testimonial {
+  border: 1px solid rgba(255,255,255,.15);
+  padding: 28px;
+}
+
+.stars {
+  color: #e2c58d;
+  letter-spacing: 3px;
+  margin-bottom: 18px;
+}
+
+.testimonial blockquote {
+  font-family: 'Playfair Display',serif;
+  font-size: 19px;
+  line-height: 1.7;
+}
+
+.testimonial small {
+  display: block;
+  color: #e2c58d;
+  font-size: 10px;
+  margin-top: 20px;
+  letter-spacing: 1px;
+}
+
+/* CONTACT */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: .85fr 1.15fr;
+  gap: 55px;
+}
+
+.contact-copy h2 {
+  color: var(--green);
+  font-size: clamp(35px,4vw,50px);
+  font-weight: 400;
+  margin: 15px 0;
+}
+
+.contact-copy p {
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 13px;
+}
+
+.contact-detail {
+  margin-top: 25px;
+  font-size: 12px;
+  line-height: 2;
+}
+
+.contact-form {
+  background: white;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.contact-form .field { margin-bottom: 17px; }
+.contact-form .field textarea { min-height: 100px; resize: vertical; }
+
+.contact-form .primary-btn {
+  width: 100%;
+  min-height: 48px;
+}
+
+/* FOOTER */
+
+footer {
+  background: #0c211b;
+  color: white;
+  padding: 55px 7% 25px;
+}
+
+.footer-grid {
+  max-width: 1300px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 35px;
+}
+
+.footer-brand { font-size: 28px; letter-spacing: 6px; }
+
+.footer-grid p {
+  color: rgba(255,255,255,.65);
+  font-size: 12px;
+  line-height: 1.9;
+  margin-top: 15px;
+  max-width: 340px;
+}
+
+.footer-grid h4 {
+  color: #e2c58d;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-bottom: 17px;
+}
+
+.footer-links a {
+  display: block;
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  margin: 12px 0;
+}
+
+.footer-links a:hover { color: var(--gold); }
+
+.footer-bottom {
+  max-width: 1300px;
+  margin: auto;
+  border-top: 1px solid rgba(255,255,255,.14);
+  padding-top: 20px;
+  color: rgba(255,255,255,.5);
+  font-size: 10px;
+  line-height: 1.8;
+}
+
+/* PROPERTY DETAILS MODAL */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.76);
+  z-index: 5000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.open { display: flex; }
+
+.modal-box {
+  background: var(--cream);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+}
+
+.modal-image {
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+}
+
+.modal-body { padding: 28px; }
+
+.modal-body h2 {
+  color: var(--green);
+  font-size: 32px;
+  font-weight: 400;
+  margin: 12px 0;
+}
+
+.modal-body p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.modal-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 40px;
+  height: 40px;
+  background: white;
+  color: var(--green);
+  border: 0;
+  font-size: 24px;
+  z-index: 2;
+}
+
+.modal-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  font-size: 11px;
+}
+
+/* FLOATING WHATSAPP */
+
+.whatsapp-float {
+  position: fixed;
+  bottom: 22px;
+  right: 20px;
+  z-index: 200;
+  background: #1c8b52;
+  color: white;
+  border-radius: 40px;
+  padding: 14px 19px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 7px 25px rgba(0,0,0,.2);
+}
+
+/* REVEAL */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity .7s ease,transform .7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* MOBILE RESPONSIVENESS */
+
+@media(max-width:900px) {
+  .nav-links {
+    gap: 14px;
+    font-size: 11px;
+  }
+
+  .nav-cta { display: none; }
+
+  .hero {
+    gap: 30px;
+    padding: 55px 5%;
+  }
+
+  .hero-image-wrap { min-height: 390px; }
+
+  .property-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+
+  .about-grid { gap: 35px; }
+
+  .services-grid,.testimonial-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:650px) {
+  .navbar { padding: 16px 5%; }
+  .brand { font-size: 23px; }
+
+  .menu-toggle { display: block; }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--cream);
+    padding: 20px 6%;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 21px;
+    box-shadow: var(--shadow);
+  }
+
+  .nav-links.open { display: flex; }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 50px 6%;
+    gap: 35px;
+  }
+
+  .hero h1 { font-size: 48px; }
+  .hero-image-wrap { min-height: 340px; }
+  .hero-image { left: 15px; }
+
+  .trust-strip { grid-template-columns: repeat(2,1fr); gap: 25px; }
+
+  .section { padding: 65px 6%; }
+  .finder-section { padding: 60px 4%; }
+  .finder-panel { padding: 23px 18px; }
+  .finder-grid { grid-template-columns: 1fr; gap: 16px; }
+
+  .property-grid { grid-template-columns: 1fr; }
+  .property-photo { height: 255px; }
+
+  .about-grid,.contact-grid { grid-template-columns: 1fr; gap: 35px; }
+  .about-photo { min-height: 340px; }
+
+  .about-photo-label { right: -5px; }
+  .services-grid,.testimonial-grid { grid-template-columns: 1fr; }
+
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+
+  .intro-top { top: 23px; }
+  .intro-top .logo { font-size: 17px; }
+  .intro-copy { bottom: 15%; }
+  .intro-copy h1 { font-size: 43px; }
+  .intro-copy p { font-size: 11px; }
+
+  .modal-image { height: 220px; }
+  .modal-body { padding: 20px; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 </style>
 </head>
-<body>
-<div id="c3d"></div>
-<canvas id="c2d"></canvas>
 
-<div id="topbar">
-  <button class="tb-btn" onclick="openPanel('shopPanel')">🛒 SHOP</button>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="tb-btn dark" onclick="openPanel('hudPanel')">🎮 HUD</button>
-    <button class="tb-btn dark" onclick="openPanel('sensPanel')">🎯 SENS</button>
-    <select id="levelSel" onchange="setLevel(this.value)">
-      <option value="beginner">🟦 BEGINNER</option>
-      <option value="advanced">🟧 ADVANCED</option>
-      <option value="pro">🟥 PRO</option>
-    </select>
+<body class="intro-active">
+
+<!-- CINEMATIC OPENING -->
+<div id="cinematicIntro">
+  <div class="intro-sky"></div>
+  <div class="intro-shade"></div>
+
+  <div class="intro-top">
+    <div class="logo">HAVEN<span class="gold">.</span></div>
+    <span>PROPERTY • LIFESTYLE • HOME</span>
   </div>
-  <div id="cashBox">💰 <span id="cash">500</span></div>
+
+  <div class="intro-copy" id="introCopy">
+    <span class="intro-eyebrow">A new standard of living</span>
+    <h1>Find your place<br>in the <em class="gold">world.</em></h1>
+    <p>EXCEPTIONAL HOMES. EXTRAORDINARY LIVING.</p>
+    <button class="intro-button" id="enterHaven">ENTER HAVEN &nbsp; ↗</button>
+    <div class="intro-progress"><span></span></div>
+  </div>
+
+  <div class="intro-hint">YOUR NEXT CHAPTER STARTS HERE</div>
 </div>
 
-<div id="joyBase"></div><div id="joyKnob"></div>
-<div id="fireBtn">🔥</div>
-<div class="hudbtn" id="btnJump">⬆</div>
-<div class="hudbtn" id="btnReload">R</div>
-<div class="hudbtn" id="btnCrouch">🧎</div>
-<div class="hudbtn" id="btnLock" title="HUD edit lock">🔓</div>
-<div id="cross"></div><div id="hitmark">✕</div>
-<div id="coach"></div>
-<div id="ammo">30/30</div><div id="wpnTag">UMP</div>
-<div id="hitToggle">
-  <button id="tgHead" class="on" onclick="setTargetMode('head')">HEADSHOT</button>
-  <button id="tgBody" onclick="setTargetMode('body')">BODY</button>
-</div>
-<div id="toast"></div>
+<header>
+  <nav class="navbar">
+    <a href="#home" class="brand">HAVEN<small>REAL ESTATE & LIFESTYLE</small></a>
 
-<!-- SHOP -->
-<div class="panel" id="shopPanel"><div class="card">
-  <h2>WEAPONS SHOP <span class="x" onclick="closePanels()">✖</span></h2>
-  <div class="sub">Earn cash from hits & kills. Buy & equip to train with.</div>
-  <div class="wgrid" id="wgrid"></div>
-</div></div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button>
 
-<!-- HUD -->
-<div class="panel" id="hudPanel"><div class="card">
-  <h2>CUSTOMIZE HUD <span class="x" onclick="closePanels()">✖</span></h2>
-  <div class="sub">Drag the FIRE button anywhere (unlock 🔓 first). Export your code or paste one to load it — like Free Fire's "Obtain HUD".</div>
-  <div class="row"><label>Fire Button</label><input type="range" id="hudSize" min="60" max="170" value="110" oninput="hudApply()"><span class="val" id="hudSizeV">110</span></div>
-  <div class="row"><label>Opacity</label><input type="range" id="hudOp" min="20" max="100" value="92" oninput="hudApply()"><span class="val" id="hudOpV">92%</span></div>
-  <div class="row"><label>Joystick</label><input type="range" id="hudJoy" min="80" max="180" value="120" oninput="hudApply()"><span class="val" id="hudJoyV">120</span></div>
-  <div class="btnrow">
-    <button class="btn ghost" onclick="hudRandom()">🎲 Random</button>
-    <button class="btn" onclick="hudExport()">📤 EXPORT CODE</button>
-    <button class="btn green" onclick="hudImport()">📥 OBTAIN HUD</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#properties">Properties</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <a href="#finder" class="nav-cta">FIND YOUR HOME ↗</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="hero-copy reveal">
+    <span class="eyebrow">Welcome to a better way home</span>
+    <h1>More than a house.<br><em>A feeling.</em></h1>
+    <p class="hero-text">
+      Discover exceptional properties, explore inspiring spaces,
+      and find a home that feels like it was made just for you.
+      Your next chapter begins with HAVEN.
+    </p>
+    <div class="hero-actions">
+      <a class="primary-btn" href="#finder">FIND YOUR PROPERTY ↗</a>
+      <a class="secondary-btn" href="#properties">EXPLORE HOMES</a>
+    </div>
   </div>
-  <textarea id="hudCode" placeholder="HUD code appears here / paste code here..."></textarea>
-  <div class="ai-box" id="hudAI"></div>
-</div></div>
 
-<!-- SENS -->
-<div class="panel" id="sensPanel"><div class="card">
-  <h2>SENSITIVITY <span class="x" onclick="closePanels()">✖</span></h2>
-  <div class="sub">AI builds sensitivity matched to YOUR fire-button size & position.</div>
-  <div class="row"><label>General</label><input type="range" id="sGen" min="10" max="200" value="100" oninput="sensRead()"><span class="val" id="sGenV">100</span></div>
-  <div class="row"><label>Red Dot</label><input type="range" id="sRed" min="10" max="200" value="100" oninput="sensRead()"><span class="val" id="sRedV">100</span></div>
-  <div class="row"><label>2x Scope</label><input type="range" id="s2x" min="10" max="200" value="90" oninput="sensRead()"><span class="val" id="s2xV">90</span></div>
-  <div class="row"><label>4x Scope</label><input type="range" id="s4x" min="10" max="200" value="80" oninput="sensRead()"><span class="val" id="s4xV">80</span></div>
-  <div class="row"><label>AWM Scope</label><input type="range" id="sAwm" min="10" max="200" value="60" oninput="sensRead()"><span class="val" id="sAwmV">60</span></div>
-  <div class="btnrow"><button class="btn green" onclick="aiSens()">🤖 AI: BUILD PERFECT SENSITIVITY</button></div>
-  <div class="ai-box" id="sensAI"></div>
-</div></div>
+  <div class="hero-image-wrap reveal">
+    <div class="hero-image"></div>
+    <div class="hero-image-tag">
+      <small>THE HAVEN COLLECTION</small>
+      <strong>Spaces that inspire.</strong>
+    </div>
+  </div>
+</section>
 
+<div class="trust-strip">
+  <div class="trust-item"><strong>01</strong><span>PERSONAL PROPERTY SEARCH</span></div>
+  <div class="trust-item"><strong>02</strong><span>CURATED HOME COLLECTIONS</span></div>
+  <div class="trust-item"><strong>03</strong><span>BUYING & RENTING SUPPORT</span></div>
+  <div class="trust-item"><strong>04</strong><span>YOUR NEEDS COME FIRST</span></div>
+</div>
+
+<!-- PROPERTY FINDER -->
+<section class="finder-section" id="finder">
+  <div class="finder-panel reveal">
+    <div class="finder-title">
+      <span class="eyebrow">Your home, your way</span>
+      <h2>Let's find your <em>perfect place.</em></h2>
+      <p>Tell us what you're looking for. We'll filter the available demo listings to help you explore suitable options.</p>
+    </div>
+
+    <form id="propertySearch">
+      <div class="finder-grid">
+        <div class="field">
+          <label for="searchType">What do you need?</label>
+          <select id="searchType">
+            <option value="all">All property types</option>
+            <option value="house">House / Mansion</option>
+            <option value="apartment">Apartment / Flat</option>
+            <option value="land">Land / Plot</option>
+            <option value="villa">Villa</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="searchLocation">Preferred location</label>
+          <select id="searchLocation">
+            <option value="all">Anywhere</option>
+            <option value="lagos">Lagos</option>
+            <option value="abuja">Abuja</option>
+            <option value="owerri">Owerri</option>
+            <option value="epe">Epe</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="searchPurpose">I'm looking to</label>
+          <select id="searchPurpose">
+            <option value="all">Buy or rent</option>
+            <option value="sale">Buy a property</option>
+            <option value="rent">Rent a property</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="minBudget">Minimum budget (₦)</label>
+          <input id="minBudget" type="number" min="0" placeholder="e.g. 5000000">
+        </div>
+
+        <div class="field">
+          <label for="maxBudget">Maximum budget (₦)</label>
+          <input id="maxBudget" type="number" min="0" placeholder="e.g. 100000000">
+        </div>
+
+        <div class="field">
+          <label for="searchBedrooms">Bedrooms required</label>
+          <select id="searchBedrooms">
+            <option value="0">Any number</option>
+            <option value="1">1+ bedrooms</option>
+            <option value="2">2+ bedrooms</option>
+            <option value="3">3+ bedrooms</option>
+            <option value="4">4+ bedrooms</option>
+            <option value="5">5+ bedrooms</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="finder-actions">
+        <button class="primary-btn" type="submit">FIND MY PROPERTY ↗</button>
+        <button class="clear-btn" type="reset" id="clearSearch">Clear filters</button>
+      </div>
+
+      <p class="finder-note">
+        These are sample listings for website demonstration. Actual availability,
+        prices, property details and ownership must be confirmed with the property owner.
+      </p>
+
+      <div id="searchFeedback" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+
+<!-- PROPERTIES -->
+<section class="section property-section" id="properties">
+  <div class="section-inner">
+    <div class="section-heading reveal">
+      <span class="eyebrow">Explore the collection</span>
+      <h2>Spaces worth <em>coming home to.</em></h2>
+      <p>From contemporary apartments to spacious family homes, discover a place that matches your lifestyle.</p>
+    </div>
+
+    <div class="property-toolbar">
+      <p id="listingCount">Showing all demo properties</p>
+      <a href="#finder" class="secondary-btn">REFINE YOUR SEARCH ↓</a>
+    </div>
+
+    <div class="property-grid" id="propertyGrid">
+
+      <article class="property-card"
+        data-type="villa" data-location="lagos" data-purpose="sale"
+        data-price="185000000" data-bedrooms="5">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">Featured home</span>
+          <span class="property-price">₦185M</span>
+        </div>
+        <div class="property-content">
+          <h3>The Haven Villa</h3>
+          <p class="property-location">Lekki, Lagos · Sample location</p>
+          <div class="property-features"><span>🛏 5 Beds</span><span>🛁 5 Baths</span><span>⌂ Villa</span></div>
+          <div class="property-footer">
+            <span class="property-location">For sale · Demo price</span>
+            <button class="details-btn" data-property="0">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="property-card"
+        data-type="apartment" data-location="lagos" data-purpose="rent"
+        data-price="3500000" data-bedrooms="3">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">Modern living</span>
+          <span class="property-price">₦3.5M/yr</span>
+        </div>
+        <div class="property-content">
+          <h3>Skyline Residence</h3>
+          <p class="property-location">Victoria Island, Lagos · Sample location</p>
+          <div class="property-features"><span>🛏 3 Beds</span><span>🛁 3 Baths</span><span>⌂ Apartment</span></div>
+          <div class="property-footer">
+            <span class="property-location">For rent · Demo price</span>
+            <button class="details-btn" data-property="1">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="property-card"
+        data-type="house" data-location="lagos" data-purpose="sale"
+        data-price="95000000" data-bedrooms="4">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">Family home</span>
+          <span class="property-price">₦95M</span>
+        </div>
+        <div class="property-content">
+          <h3>Willow Family House</h3>
+          <p class="property-location">Ikeja, Lagos · Sample location</p>
+          <div class="property-features"><span>🛏 4 Beds</span><span>🛁 4 Baths</span><span>⌂ House</span></div>
+          <div class="property-footer">
+            <span class="property-location">For sale · Demo price</span>
+            <button class="details-btn" data-property="2">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="property-card"
+        data-type="villa" data-location="abuja" data-purpose="sale"
+        data-price="220000000" data-bedrooms="5">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">Luxury collection</span>
+          <span class="property-price">₦220M</span>
+        </div>
+        <div class="property-content">
+          <h3>Royal Garden Villa</h3>
+          <p class="property-location">Maitama, Abuja · Sample location</p>
+          <div class="property-features"><span>🛏 5 Beds</span><span>🛁 6 Baths</span><span>⌂ Villa</span></div>
+          <div class="property-footer">
+            <span class="property-location">For sale · Demo price</span>
+            <button class="details-btn" data-property="3">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="property-card"
+        data-type="apartment" data-location="owerri" data-purpose="rent"
+        data-price="1200000" data-bedrooms="2">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">City comfort</span>
+          <span class="property-price">₦1.2M/yr</span>
+        </div>
+        <div class="property-content">
+          <h3>Emerald Apartment</h3>
+          <p class="property-location">New Owerri, Imo · Sample location</p>
+          <div class="property-features"><span>🛏 2 Beds</span><span>🛁 2 Baths</span><span>⌂ Apartment</span></div>
+          <div class="property-footer">
+            <span class="property-location">For rent · Demo price</span>
+            <button class="details-btn" data-property="4">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="property-card"
+        data-type="land" data-location="epe" data-purpose="sale"
+        data-price="15000000" data-bedrooms="0">
+        <div class="property-photo" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=85')">
+          <span class="property-badge">Investment</span>
+          <span class="property-price">₦15M</span>
+        </div>
+        <div class="property-content">
+          <h3>Greenfield Plot</h3>
+          <p class="property-location">Epe, Lagos · Sample location</p>
+          <div class="property-features"><span>🌿 Land</span><span>⌂ Development potential</span></div>
+          <div class="property-footer">
+            <span class="property-location">For sale · Demo price</span>
+            <button class="details-btn" data-property="5">VIEW DETAILS ↗</button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="no-results" id="noResults">
+      <h3>No matching demo properties found.</h3>
+      <p>Try changing your location or budget, or clear your filters to see all listings.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section about-section" id="about">
+  <div class="section-inner about-grid">
+    <div class="about-photo reveal">
+      <div class="about-photo-label">
+        <strong>Feel at home.</strong>
+        <span>Thoughtfully selected spaces for your next chapter.</span>
+      </div>
+    </div>
+
+    <div class="about-copy reveal">
+      <span class="eyebrow">The HAVEN experience</span>
+      <h2>A home should feel like <em>you.</em></h2>
+      <p>
+        Finding a property is about more than walls and windows.
+        It's about the people, moments and possibilities that make a
+        place special. HAVEN helps you explore options around your
+        needs, preferences and plans.
+      </p>
+
+      <div class="about-points">
+        <div class="about-point">
+          <strong>01 — Personalised</strong>
+          <p>Explore options that match your priorities.</p>
+        </div>
+        <div class="about-point">
+          <strong>02 — Thoughtful</strong>
+          <p>Compare spaces, locations and budgets.</p>
+        </div>
+        <div class="about-point">
+          <strong>03 — Convenient</strong>
+          <p>Send enquiries from one simple place.</p>
+        </div>
+        <div class="about-point">
+          <strong>04 — Lifestyle-led</strong>
+          <p>Make room for the life you want to live.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <div class="section-inner">
+    <div class="section-heading reveal">
+      <span class="eyebrow">How we help</span>
+      <h2>Your property journey, <em>simplified.</em></h2>
+      <p>Explore the services the HAVEN team can offer. Confirm the actual services with the business owner before publishing.</p>
+    </div>
+
+    <div class="services-grid">
+      <article class="service-card reveal">
+        <div class="service-icon">⌂</div>
+        <h3>Find a Home</h3>
+        <p>Explore houses, apartments and other properties based on your preferred location and budget.</p>
+      </article>
+
+      <article class="service-card reveal">
+        <div class="service-icon">◇</div>
+        <h3>Property Sales</h3>
+        <p>Browse properties you may wish to purchase and send an enquiry to discuss the details.</p>
+      </article>
+
+      <article class="service-card reveal">
+        <div class="service-icon">✧</div>
+        <h3>Rental Search</h3>
+        <p>Compare sample rental options and share your requirements with the property team.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section testimonials-section">
+  <div class="section-inner">
+    <div class="section-heading reveal">
+      <span class="eyebrow">The HAVEN promise</span>
+      <h2>Every great journey starts <em>somewhere.</em></h2>
+      <p>We believe property discovery should feel clear, personal and inspiring.</p>
+    </div>
+
+    <div class="testimonial-grid">
+      <article class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>“The right home starts with understanding what matters to you.”</blockquote>
+        <small>THE HAVEN APPROACH</small>
+      </article>
+
+      <article class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>“A thoughtful search makes exploring property feel easier.”</blockquote>
+        <small>OUR SERVICE PHILOSOPHY</small>
+      </article>
+
+      <article class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>“Your next chapter deserves a place that feels right.”</blockquote>
+        <small>THE HAVEN EXPERIENCE</small>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="section-inner contact-grid">
+    <div class="contact-copy reveal">
+      <span class="eyebrow">Let's talk property</span>
+      <h2>Tell us what <em>home means to you.</em></h2>
+      <p>
+        Share your requirements and send them directly to the HAVEN
+        team through WhatsApp. The team can then discuss suitable
+        properties and confirm current availability.
+      </p>
+
+      <div class="contact-detail">
+        <strong>Property enquiries</strong><br>
+        Use the form to send your requirements.<br><br>
+        <strong>Location</strong><br>
+        Ask the HAVEN team about its service areas.
+      </div>
+    </div>
+
+    <form class="contact-form reveal" id="contactForm">
+      <div class="finder-grid">
+        <div class="field">
+          <label for="contactName">Your name</label>
+          <input id="contactName" required placeholder="Full name">
+        </div>
+        <div class="field">
+          <label for="contactPhone">Your phone</label>
+          <input id="contactPhone" required type="tel" placeholder="Phone number">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:17px">
+        <label for="contactMessage">How can we help?</label>
+        <textarea id="contactMessage" required placeholder="Tell us the property type, preferred area and budget..."></textarea>
+      </div>
+
+      <button class="primary-btn" type="submit">SEND ENQUIRY ON WHATSAPP ↗</button>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">HAVEN<span class="gold">.</span></div>
+      <p>Discover a place that feels like yours. Explore property possibilities with HAVEN.</p>
+    </div>
+
+    <div class="footer-links">
+      <h4>EXPLORE</h4>
+      <a href="#home">Home</a>
+      <a href="#properties">Properties</a>
+      <a href="#finder">Property finder</a>
+      <a href="#about">About HAVEN</a>
+    </div>
+
+    <div class="footer-links">
+      <h4>GET IN TOUCH</h4>
+      <a href="#contact">Contact the team</a>
+      <a href="#services">Our services</a>
+      <a href="#finder">Find your property</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © <span id="footerYear"></span> HAVEN Real Estate. All rights reserved.
+    <br>Demo property information is illustrative and must be verified before publication.
+  </div>
+</footer>
+
+<a href="#contact" class="whatsapp-float">WhatsApp ↗</a>
+
+<!-- PROPERTY DETAILS WINDOW -->
+<div class="modal" id="propertyModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose" aria-label="Close details">×</button>
+    <div class="modal-image" id="modalImage"></div>
+    <div class="modal-body">
+      <span class="eyebrow" id="modalLocation"></span>
+      <h2 id="modalTitle">Property details</h2>
+      <p id="modalDescription"></p>
+      <div class="modal-info" id="modalInfo"></div>
+      <button class="primary-btn" id="modalEnquire">ENQUIRE ABOUT THIS PROPERTY ↗</button>
+    </div>
+  </div>
+</div>
 <script>
-/* ================================================================
-   FF TRAINER 3D — third-person aim training room
-   ================================================================ */
-const isTouch = ('ontouchstart' in window);
-const c2 = document.getElementById('c2d'), ctx2 = c2.getContext('2d');
-function fit2(){ c2.width = innerWidth; c2.height = innerHeight; }
-addEventListener('resize', fit2); fit2();
+/* =========================================
+   HAVEN WEBSITE SETTINGS
+   Change this to the real owner's WhatsApp.
+   Example: 08012345678 becomes 2348012345678
+========================================= */
 
-/* ---------------- Three.js scene ---------------- */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a2027);
-scene.fog = new THREE.Fog(0x1a2027, 30, 90);
-const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 200);
-const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.getElementById('c3d').appendChild(renderer.domElement);
-addEventListener('resize', () => { camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); fit2(); });
+const HAVEN_WHATSAPP = "2348104959223";
 
-scene.add(new THREE.AmbientLight(0x8899aa, 0.55));
-const sun = new THREE.DirectionalLight(0xfff2dd, 0.9);
-sun.position.set(8, 18, 6); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left=-30; sun.shadow.camera.right=30; sun.shadow.camera.top=30; sun.shadow.camera.bottom=-30;
-scene.add(sun);
+/* =========================================
+   CINEMATIC OPENING
+========================================= */
 
-/* ---------------- Training room (warehouse) ---------------- */
-const RM = { w: 44, d: 44, h: 10 };
-const matFloor = new THREE.MeshStandardMaterial({ color:0x3a4048, roughness:0.9 });
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(RM.w, RM.d), matFloor);
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
-// floor grid lines
-const grid = new THREE.GridHelper(RM.w, 22, 0x556070, 0x2c333d); grid.position.y = 0.01; scene.add(grid);
+const intro = document.getElementById("cinematicIntro");
+const enterButton = document.getElementById("enterHaven");
+let introFinished = false;
 
-const matWall = new THREE.MeshStandardMaterial({ color:0x4a5568, roughness:0.85 });
-function wall(w, h, x, y, z, ry){
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), matWall);
-  m.position.set(x, y, z); m.rotation.y = ry; m.receiveShadow = true; scene.add(m);
-}
-wall(RM.w, RM.h, 0, RM.h/2, -RM.d/2, 0);
-wall(RM.w, RM.h, 0, RM.h/2,  RM.d/2, Math.PI);
-wall(RM.d, RM.h, -RM.w/2, RM.h/2, 0, Math.PI/2);
-wall(RM.d, RM.h,  RM.w/2, RM.h/2, 0, -Math.PI/2);
-// ceiling
-const ceil = new THREE.Mesh(new THREE.PlaneGeometry(RM.w, RM.d), new THREE.MeshStandardMaterial({ color:0x2b323c }));
-ceil.rotation.x = Math.PI/2; ceil.position.y = RM.h; scene.add(ceil);
-// ceiling lights
-for (let i=-1;i<=1;i++) for (let j=-1;j<=1;j++){
-  const l = new THREE.Mesh(new THREE.BoxGeometry(4, 0.15, 1), new THREE.MeshBasicMaterial({ color:0xdfeaff }));
-  l.position.set(i*12, RM.h-0.1, j*12); scene.add(l);
-  const pl = new THREE.PointLight(0xcfe0ff, 0.35, 30); pl.position.set(i*12, RM.h-1, j*12); scene.add(pl);
-}
-// window strips on walls
-const matGlass = new THREE.MeshStandardMaterial({ color:0x9fd8e8, roughness:0.2, metalness:0.4, emissive:0x224a55, emissiveIntensity:0.6 });
-for (let i=-1;i<=1;i++){
-  const win = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.2), matGlass);
-  win.position.set(i*13, 6, -RM.d/2 + 0.05); scene.add(win);
-  const win2 = win.clone(); win2.position.set(i*13, 6, RM.d/2 - 0.05); win2.rotation.y = Math.PI; scene.add(win2);
-}
-// crates & cover (like the screenshots)
-const matCrate = new THREE.MeshStandardMaterial({ color:0x7a8455, roughness:0.9 });
-const matCrate2 = new THREE.MeshStandardMaterial({ color:0x6b7280, roughness:0.9 });
-const matTire = new THREE.MeshStandardMaterial({ color:0x1f2226, roughness:0.95 });
-const covers = [];
-function crate(x, z, s, mat, ry){
-  const m = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), mat||matCrate);
-  m.position.set(x, s/2, z); m.rotation.y = ry||0; m.castShadow = m.receiveShadow = true;
-  scene.add(m); covers.push(m);
-}
-crate(-8,-6,2.2); crate(-6.2,-6.4,2.2); crate(-7.2,-6.2,2.2,matCrate2,0.4); crate(-7,-4.4,2.2);
-crate(6,-10,2.4,matCrate2); crate(8,-9.4,2.0); crate(7,-8.2,2.2);
-crate(-12,4,2.0,matCrate2); crate(-10.4,4.6,2.2); crate(11,6,2.3); crate(12.6,5.2,2.0,matCrate2);
-crate(0,-14,2.6); crate(2,-13.4,2.0,matCrate2); crate(-3,10,2.2); crate(14,-2,2.4,matCrate2);
-for (const [x,z] of [[-4,2],[9,2],[-14,-2],[4,12]]){
-  const t = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.35, 10, 20), matTire);
-  t.rotation.x = Math.PI/2; t.position.set(x, 0.36, z); t.castShadow = true; scene.add(t);
-  const t2 = t.clone(); t2.position.y = 1.05; scene.add(t2);
+function enterWebsite() {
+  if (introFinished) return;
+  introFinished = true;
+
+  intro.classList.add("intro-entering");
+
+  setTimeout(() => {
+    intro.classList.add("finished");
+    document.body.classList.remove("intro-active");
+  }, 1700);
 }
 
-/* ---------------- Character builder ---------------- */
-const matSkin = new THREE.MeshStandardMaterial({ color:0xe8b98a, roughness:0.7 });
-function makeHumanoid(shirt, pants, skin){
-  const g = new THREE.Group();
-  const mS = new THREE.MeshStandardMaterial({ color:shirt, roughness:0.8 });
-  const mP = new THREE.MeshStandardMaterial({ color:pants, roughness:0.85 });
-  const mK = new THREE.MeshStandardMaterial({ color:skin||0xe8b98a, roughness:0.7 });
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.32, 0.55, 4, 10) : new THREE.CylinderGeometry(0.32,0.32,0.9,10), mS);
-  torso.position.y = 1.25; torso.castShadow = true; g.add(torso);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 14, 12), mK);
-  head.position.y = 1.98; head.castShadow = true; g.add(head);
-  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.26, 0.12, 12), new THREE.MeshStandardMaterial({ color:0x222831 }));
-  cap.position.y = 2.12; g.add(cap);
-  const brim = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.04, 0.28), new THREE.MeshStandardMaterial({ color:0x222831 }));
-  brim.position.set(0, 2.08, 0.3); g.add(brim);
-  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.5, 0.2), new THREE.MeshStandardMaterial({ color:0x37424f }));
-  pack.position.set(0, 1.35, -0.32); pack.castShadow = true; g.add(pack);
-  function limb(r, len, mat){
-    const p = new THREE.Group();
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r*0.85, len, 8), mat);
-    m.position.y = -len/2; m.castShadow = true; p.add(m);
-    return p;
-  }
-  const armL = limb(0.11, 0.62, mS); armL.position.set(-0.44, 1.62, 0); g.add(armL);
-  const armR = limb(0.11, 0.62, mS); armR.position.set( 0.44, 1.62, 0); g.add(armR);
-  const legL = limb(0.14, 0.85, mP); legL.position.set(-0.18, 0.9, 0); g.add(legL);
-  const legR = limb(0.14, 0.85, mP); legR.position.set( 0.18, 0.9, 0); g.add(legR);
-  return { group:g, head, torso, armL, armR, legL, legR };
-}
+enterButton.addEventListener("click", enterWebsite);
 
-/* Player */
-const player = makeHumanoid(0x3f8cff, 0x2d3748);
-player.group.position.set(0, 0, 8);
-scene.add(player.group);
-let gunMesh = null;
-function buildGun(color){
-  if (gunMesh) player.group.remove(gunMesh);
-  gunMesh = new THREE.Group();
-  const m = new THREE.MeshStandardMaterial({ color:color||0x22262c, roughness:0.4, metalness:0.6 });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.14, 0.55), m); gunMesh.add(body);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 8), m);
-  barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.03, -0.4); gunMesh.add(barrel);
-  const mag = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.18, 0.1), m); mag.position.set(0, -0.14, 0.05); gunMesh.add(mag);
-  const stock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.22), m); stock.position.set(0, -0.02, 0.36); gunMesh.add(stock);
-  gunMesh.position.set(0.3, 1.35, -0.25);
-  player.group.add(gunMesh);
-}
+// Automatically enter after the cinematic introduction.
+setTimeout(() => {
+  if (!introFinished) enterWebsite();
+}, 8000);
 
-/* ---------------- Enemies ---------------- */
-const LEVELS = {
-  beginner: { speed:1.6, headR:0.26, bodyR:0.55, hp:100, hint:'full',  spreadMul:0.6, count:4 },
-  advanced: { speed:2.8, headR:0.2,  bodyR:0.5,  hp:140, hint:'brief', spreadMul:1.0, count:5 },
-  pro:      { speed:4.2, headR:0.15, bodyR:0.45, hp:190, hint:'none',  spreadMul:1.6, count:6 },
-};
-let enemies = [];
-const rayTargets = [];
-function spawnEnemy(){
-  const L = LEVELS[level];
-  const x = (Math.random()-0.5) * (RM.w-8);
-  const z = -RM.d/2 + 4 + Math.random() * (RM.d*0.5);
-  const c = makeHumanoid(0xc0392b, 0x30231f, 0xf1c27d);
-  c.group.position.set(x, 0, z);
-  c.head.scale.setScalar(L.headR / 0.24);
-  c.group.traverse(o => { if (o.isMesh){ o.castShadow = true; } });
-  c.group.userData = { enemy:true };
-  c.head.userData = { part:'head' };
-  c.torso.userData = { part:'body' };
-  rayTargets.push(c.head, c.torso);
-  scene.add(c.group);
-  enemies.push({ c, hp:L.hp, maxHp:L.hp, t:Math.random()*10, phase:Math.random()*Math.PI*2, dead:0, hitFlash:0, baseX:x, baseZ:z });
-}
-function fillEnemies(){
-  for (const e of enemies) scene.remove(e.c.group);
-  enemies = []; rayTargets.length = 0;
-  for (let i=0;i<LEVELS[level].count;i++) spawnEnemy();
-}
+/* =========================================
+   MOBILE NAVIGATION
+========================================= */
 
-/* ---------------- Game state ---------------- */
-const WEAPONS = [
-  { id:'ump',  name:'UMP',    price:0,    dmg:22, rpm:600, spread:1.8, mag:30, color:0x39424e, auto:true },
-  { id:'mp5',  name:'MP5',    price:600,  dmg:20, rpm:780, spread:2.2, mag:32, color:0x4e4439, auto:true },
-  { id:'p90',  name:'P90',    price:900,  dmg:19, rpm:900, spread:2.8, mag:50, color:0x5a3d6e, auto:true },
-  { id:'ak',   name:'AK',     price:1200, dmg:34, rpm:550, spread:1.5, mag:30, color:0x6e3d3d, auto:true },
-  { id:'m4',   name:'M4A1',   price:1100, dmg:28, rpm:660, spread:1.1, mag:30, color:0x3d6e4d, auto:true },
-  { id:'awm',  name:'AWM',    price:2500, dmg:95, rpm:45,  spread:0.1, mag:5,  color:0x8a7a2e, auto:false },
-  { id:'deagle',name:'DESERT EAGLE', price:800, dmg:48, rpm:220, spread:1.0, mag:7, color:0x6e663d, auto:false },
-  { id:'thompson',name:'THOMPSON', price:1500, dmg:26, rpm:700, spread:1.9, mag:40, color:0x6e4d2e, auto:true },
-];
-let cash = +(localStorage.getItem('fft3_cash') ?? 500);
-let owned = JSON.parse(localStorage.getItem('fft3_owned') ?? '["ump"]');
-let weapon = WEAPONS.find(w=>w.id===(localStorage.getItem('fft3_wpn')??'ump'));
-let level = 'beginner';
-let targetMode = 'head';
-let sens = JSON.parse(localStorage.getItem('fft3_sens') ?? '{"gen":100,"red":100,"s2":90,"s4":80,"awm":60}');
-let hud = JSON.parse(localStorage.getItem('fft3_hud') ?? '{"fire":110,"op":92,"joy":120,"fx":0,"fy":0}');
-let ammo = weapon.mag, reloading = 0, lastShot = 0;
-let firing = false, crouched = false;
-let camYaw = Math.PI, camPitch = -0.12; // camera behind player looking forward
-let walkCycle = 0, moving = false;
-buildGun(weapon.color);
+const menuToggle = document.getElementById("menuToggle");
+const navLinks = document.getElementById("navLinks");
 
-/* ---------------- Controls: joystick + look ---------------- */
-const joy = { active:false, id:null, x:0, y:0 };
-const joyBase = document.getElementById('joyBase'), joyKnob = document.getElementById('joyKnob');
-let lookId = null, lookLast = null;
-const cvEl = renderer.domElement;
-
-cvEl.addEventListener('touchstart', e => {
-  for (const t of e.changedTouches){
-    if (t.clientX < innerWidth*0.45 && !joy.active){
-      joy.active = true; joy.id = t.identifier;
-      joy.bx = t.clientX; joy.by = t.clientY;
-      joyBase.style.display = joyKnob.style.display = 'block';
-      joyBase.style.left = (t.clientX-60)+'px'; joyBase.style.top = (t.clientY-60)+'px';
-      joyKnob.style.left = (t.clientX-26)+'px'; joyKnob.style.top = (t.clientY-26)+'px';
-    } else if (lookId === null){
-      lookId = t.identifier; lookLast = { x:t.clientX, y:t.clientY };
-    }
-  }
-}, { passive:false });
-cvEl.addEventListener('touchmove', e => {
-  e.preventDefault();
-  for (const t of e.changedTouches){
-    if (joy.active && t.identifier === joy.id){
-      let dx = t.clientX - joy.bx, dy = t.clientY - joy.by;
-      const d = Math.hypot(dx,dy), max = hud.joy*0.45;
-      if (d > max){ dx = dx/d*max; dy = dy/d*max; }
-      joy.x = dx/max; joy.y = dy/max;
-      joyKnob.style.left = (joy.bx+dx-26)+'px'; joyKnob.style.top = (joy.by+dy-26)+'px';
-    } else if (t.identifier === lookId && lookLast){
-      const k = 0.0042 * (sens.gen/100);
-      camYaw   -= (t.clientX - lookLast.x) * k;
-      camPitch -= (t.clientY - lookLast.y) * k;
-      camPitch = Math.max(-1.1, Math.min(0.5, camPitch));
-      lookLast = { x:t.clientX, y:t.clientY };
-    }
-  }
-}, { passive:false });
-function touchEnd(e){
-  for (const t of e.changedTouches){
-    if (t.identifier === joy.id){ joy.active = false; joy.id = null; joy.x = joy.y = 0;
-      joyBase.style.display = joyKnob.style.display = 'none'; }
-    if (t.identifier === lookId){ lookId = null; lookLast = null; }
-  }
-}
-cvEl.addEventListener('touchend', touchEnd); cvEl.addEventListener('touchcancel', touchEnd);
-
-/* Desktop: pointer-lock mouse look + WASD */
-const keys = {};
-addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key.toLowerCase()==='r') startReload(); });
-addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-cvEl.addEventListener('click', () => { if (!isTouch) cvEl.requestPointerLock?.(); });
-addEventListener('mousemove', e => {
-  if (document.pointerLockElement === cvEl){
-    const k = 0.0022 * (sens.gen/100);
-    camYaw -= e.movementX * k;
-    camPitch = Math.max(-1.1, Math.min(0.5, camPitch - e.movementY * k));
-  }
+menuToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("open");
+  menuToggle.textContent = navLinks.classList.contains("open") ? "×" : "☰";
 });
 
-/* Fire button */
-const fb = document.getElementById('fireBtn');
-let fbDrag = null, hudEdit = true;
-document.getElementById('btnLock').onclick = () => {
-  hudEdit = !hudEdit;
-  document.getElementById('btnLock').textContent = hudEdit ? '🔓' : '🔒';
-  toast(hudEdit ? 'HUD edit ON — drag buttons' : 'HUD locked');
-};
-function placeFB(){
-  const s = hud.fire;
-  const ax = innerWidth - 30 - s - (hud.fx||0), ay = innerHeight - 30 - s - (hud.fy||0);
-  fb.style.width = fb.style.height = s+'px';
-  fb.style.left = ax+'px'; fb.style.top = ay+'px';
-  fb.style.opacity = hud.op/100;
-}
-fb.addEventListener('pointerdown', e => {
-  if (hudEdit && e.shiftKey){ fbDrag = { id:e.pointerId }; fb.setPointerCapture(e.pointerId); return; }
-  if (hudEdit && isTouch && e.pointerType === 'mouse'){ fbDrag = { id:e.pointerId }; fb.setPointerCapture(e.pointerId); return; }
-  firing = true;
-});
-fb.addEventListener('pointermove', e => {
-  if (!fbDrag) return;
-  hud.fx = Math.max(-140, Math.min(innerWidth*0.75, innerWidth - 30 - hud.fire - e.clientX));
-  hud.fy = Math.max(-140, Math.min(innerHeight*0.75, innerHeight - 30 - hud.fire - e.clientY));
-  placeFB();
-});
-fb.addEventListener('pointerup', () => { firing = false; if (fbDrag){ fbDrag = null; saveHUD(); hudAnalyze(); } });
-document.getElementById('btnJump').addEventListener('pointerdown', () => { vy = 5.2; });
-document.getElementById('btnReload').addEventListener('pointerdown', startReload);
-document.getElementById('btnCrouch').addEventListener('pointerdown', () => { crouched = !crouched; toast(crouched?'Crouched':'Standing'); });
-addEventListener('keydown', e => { if (e.code==='Space') vy = 5.2; });
-
-function startReload(){ if (reloading<=0 && ammo < weapon.mag){ reloading = 1.4; toast('⟳ Reloading...'); } }
-
-/* ---------------- Shooting ---------------- */
-const raycaster = new THREE.Raycaster();
-const tracers3d = [];
-function shoot(now){
-  if (reloading > 0) return;
-  if (ammo <= 0){ startReload(); return; }
-  const interval = 60000 / weapon.rpm;
-  if (now - lastShot < interval) return;
-  lastShot = now; ammo--;
-  document.getElementById('ammo').textContent = ammo + '/' + weapon.mag;
-  const L = LEVELS[level];
-  const dir = new THREE.Vector3();
-  camera.getWorldDirection(dir);
-  const spread = weapon.spread * L.spreadMul * Math.PI/180;
-  dir.x += (Math.random()-0.5)*spread; dir.y += (Math.random()-0.5)*spread; dir.z += (Math.random()-0.5)*spread;
-  dir.normalize();
-  raycaster.set(camera.position, dir);
-  raycaster.far = 120;
-  const hits = raycaster.intersectObjects(rayTargets, false);
-  let end = camera.position.clone().add(dir.multiplyScalar(60));
-  if (hits.length){
-    const h = hits[0];
-    end = h.point;
-    const enemy = enemies.find(e => e.c.head === h.object || e.c.torso === h.object);
-    if (enemy && enemy.dead <= 0){
-      const part = h.object.userData.part;
-      // headshot priority: if body hit but head is closer to crosshair ray, count head
-      const headshot = part === 'head';
-      const dmg = Math.round(weapon.dmg * (headshot ? 2 : 1));
-      enemy.hp -= dmg; enemy.hitFlash = 1;
-      cash += headshot ? 50 : 20; updateCash();
-      hitmarker(headshot);
-      if (enemy.hp <= 0){
-        enemy.dead = 0.001; cash += headshot ? 100 : 50; updateCash();
-        setTimeout(() => { if (enemies.includes(enemy)) respawn(enemy); }, 900);
-      }
-    }
-  }
-  // tracer
-  const mzl = new THREE.Vector3(); gunMesh.getWorldPosition(mzl);
-  const geo = new THREE.BufferGeometry().setFromPoints([mzl, end]);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:0xffd54f, transparent:true, opacity:0.9 }));
-  scene.add(line); tracers3d.push({ line, life:1 });
-  if (!weapon.auto) firing = false;
-}
-function respawn(enemy){
-  const L = LEVELS[level];
-  enemy.hp = L.hp; enemy.maxHp = L.hp; enemy.dead = 0;
-  enemy.baseX = (Math.random()-0.5)*(RM.w-8);
-  enemy.baseZ = -RM.d/2 + 4 + Math.random()*(RM.d*0.5);
-  enemy.c.group.position.set(enemy.baseX, 0, enemy.baseZ);
-}
-function hitmarker(head){
-  const el = document.getElementById('hitmark');
-  el.style.color = head ? '#ffd54f' : '#ff8a8a';
-  el.style.opacity = 1; el.style.transform = 'scale(1.3)';
-  setTimeout(() => { el.style.opacity = 0; el.style.transform = 'scale(1)'; }, 90);
-}
-
-/* ---------------- AI coach ---------------- */
-const V3 = new THREE.Vector3();
-function toScreen(v3){
-  V3.copy(v3).project(camera);
-  return { x:(V3.x*0.5+0.5)*innerWidth, y:(-V3.y*0.5+0.5)*innerHeight, behind: V3.z > 1 };
-}
-function nearestEnemy(){
-  let best=null, bd=1e9;
-  for (const e of enemies){
-    if (e.dead>0) continue;
-    const d = e.c.group.position.distanceTo(player.group.position);
-    if (d<bd){ bd=d; best=e; }
-  }
-  return best ? { e:best, d:bd } : null;
-}
-
-/* ---------------- Main loop ---------------- */
-let vy = 0, py = 0, last = 0;
-const clock = new THREE.Clock();
-function loop(){
-  requestAnimationFrame(loop);
-  const dt = Math.min(0.05, clock.getDelta());
-  const now = performance.now();
-
-  /* movement */
-  let mx = 0, mz = 0;
-  if (keys['w']) mz -= 1; if (keys['s']) mz += 1;
-  if (keys['a']) mx -= 1; if (keys['d']) mx += 1;
-  mx += joy.x; mz += joy.y;
-  const mlen = Math.hypot(mx, mz);
-  moving = mlen > 0.15;
-  if (mlen > 1){ mx/=mlen; mz/=mlen; }
-  const speed = crouched ? 2.2 : 4.6;
-  const sin = Math.sin(camYaw), cos = Math.cos(camYaw);
-  const wx = (mx*cos - mz*sin) * speed * dt;
-  const wz = (mx*sin + mz*cos) * speed * dt;
-  player.group.position.x = Math.max(-RM.w/2+1.2, Math.min(RM.w/2-1.2, player.group.position.x + wx));
-  player.group.position.z = Math.max(-RM.d/2+1.2, Math.min(RM.d/2-1.2, player.group.position.z + wz));
-  player.group.rotation.y = camYaw;
-
-  /* jump / gravity */
-  if (vy !== 0 || py > 0){ vy -= 14*dt; py = Math.max(0, py + vy*dt); if (py===0) vy=0; }
-  player.group.position.y = py;
-
-  /* walk animation */
-  if (moving){ walkCycle += dt * (crouched?7:11); }
-  const sw = moving ? Math.sin(walkCycle)*0.55 : 0;
-  player.legL.rotation.x = sw; player.legR.rotation.x = -sw;
-  player.armL.rotation.x = -sw*0.7;
-  player.armR.rotation.x = -1.15; // aim pose
-  if (gunMesh) gunMesh.rotation.x = -camPitch*0.8;
-
-  /* camera: third person */
-  const cd = 3.6, ch = crouched ? 1.7 : 2.05;
-  const cx2 = player.group.position.x + Math.sin(camYaw)*cd*Math.cos(camPitch);
-  const cz2 = player.group.position.z + Math.cos(camYaw)*cd*Math.cos(camPitch);
-  const cy2 = player.group.position.y + ch - Math.sin(camPitch)*cd;
-  camera.position.lerp(new THREE.Vector3(cx2, cy2, cz2), 0.35);
-  camera.lookAt(player.group.position.x, player.group.position.y + 1.5, player.group.position.z);
-
-  /* enemies */
-  const L = LEVELS[level];
-  for (const e of enemies){
-    if (e.dead > 0){
-      e.dead += dt;
-      e.c.group.rotation.x = Math.min(Math.PI/2, e.dead*4);
-      e.c.group.position.y = -e.dead*0.6;
-      continue;
-    }
-    e.t += dt;
-    e.hitFlash = Math.max(0, e.hitFlash - dt*4);
-    const flash = e.hitFlash > 0 ? e.hitFlash : 0;
-    e.c.torso.material.emissive = new THREE.Color(flash*0.9, flash*0.1, flash*0.1);
-    // strafe around base point
-    const sx = Math.sin(e.t*1.3 + e.phase) * 3.2;
-    const sz = Math.cos(e.t*0.9 + e.phase) * 2.0;
-    let ex = e.baseX + sx, ez = e.baseZ + sz;
-    ex = Math.max(-RM.w/2+2, Math.min(RM.w/2-2, ex));
-    ez = Math.max(-RM.d/2+2, Math.min(RM.d/2-8, ez));
-    const dx = ex - e.c.group.position.x, dz = ez - e.c.group.position.z;
-    e.c.group.position.x += dx * Math.min(1, L.speed*dt*2);
-    e.c.group.position.z += dz * Math.min(1, L.speed*dt*2);
-    // face player
-    e.c.group.rotation.y = Math.atan2(player.group.position.x - e.c.group.position.x, player.group.position.z - e.c.group.position.z);
-    // walk anim
-    const wc = e.t * 8;
-    e.c.legL.rotation.x = Math.sin(wc)*0.5; e.c.legR.rotation.x = -Math.sin(wc)*0.5;
-    e.c.armL.rotation.x = -Math.sin(wc)*0.4; e.c.armR.rotation.x = Math.sin(wc)*0.4;
-  }
-
-  /* shooting */
-  if (firing && (weapon.auto || now-lastShot > 60000/weapon.rpm)) shoot(now);
-  if (reloading > 0){ reloading -= dt; if (reloading <= 0){ ammo = weapon.mag; document.getElementById('ammo').textContent = ammo+'/'+weapon.mag; toast('✔ Reloaded'); } }
-
-  /* tracers fade */
-  for (const t of tracers3d){ t.life -= dt*7; t.line.material.opacity = Math.max(0, t.life); }
-  while (tracers3d.length && tracers3d[0].life <= 0){ scene.remove(tracers3d[0].line); tracers3d.shift(); }
-
-  renderer.render(scene, camera);
-  drawOverlay(now);
-}
-requestAnimationFrame(loop);
-
-/* ---------------- 2D overlay: HP bars + AI lines ---------------- */
-function drawOverlay(now){
-  ctx2.clearRect(0,0,c2.width,c2.height);
-  const L = LEVELS[level];
-
-  /* enemy HP bars (screen space) */
-  for (const e of enemies){
-    if (e.dead > 0) continue;
-    V3.set(e.c.group.position.x, e.c.group.position.y + 2.45, e.c.group.position.z).project(camera);
-    if (V3.z > 1) continue;
-    const sx = (V3.x*0.5+0.5)*innerWidth, sy = (-V3.y*0.5+0.5)*innerHeight;
-    const bw = 46;
-    ctx2.fillStyle = 'rgba(0,0,0,.6)'; ctx2.fillRect(sx-bw/2, sy, bw, 5);
-    ctx2.fillStyle = '#ff5a6a'; ctx2.fillRect(sx-bw/2, sy, bw*Math.max(0,e.hp/e.maxHp), 5);
-  }
-
-  /* AI coach */
-  const coach = document.getElementById('coach');
-  if (L.hint === 'none'){ coach.style.display='none'; return; }
-  const n = nearestEnemy();
-  if (!n){ coach.style.display='none'; return; }
-  const { e, d } = n;
-  const hp = e.c.head.getWorldPosition(new THREE.Vector3());
-  const sp = toScreen(hp);
-  if (sp.behind){ coach.style.display='none'; return; }
-
-  const fbr = fb.getBoundingClientRect();
-  const fbx = fbr.left + fbr.width/2, fby = fbr.top + fbr.height/2;
-  const distM = Math.round(d * 2.2);
-
-  if (L.hint === 'full' || (L.hint === 'brief' && firing)){
-    ctx2.save();
-    ctx2.strokeStyle = 'rgba(55,255,139,.9)'; ctx2.lineWidth = 3; ctx2.setLineDash([12,9]);
-    ctx2.beginPath(); ctx2.moveTo(fbx, fby); ctx2.lineTo(sp.x, sp.y); ctx2.stroke();
-    ctx2.setLineDash([]);
-    ctx2.fillStyle = '#37ff8b';
-    ctx2.beginPath(); ctx2.arc(sp.x, sp.y, 7, 0, 7); ctx2.fill();
-    ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 2; ctx2.stroke();
-    ctx2.restore();
-  }
-  if (L.hint === 'full'){
-    const vx = sp.x - fbx, vy2 = sp.y - fby;
-    const dirH = vx>10?'RIGHT':vx<-10?'LEFT':'·';
-    const dirV = vy2>10?'DOWN':vy2<-10?'UP':'·';
-    coach.style.display = 'block';
-    coach.innerHTML = `<span class="tag">🤖 AI COACH</span><br>Enemy at <b>${distM}m</b> — ${targetMode.toUpperCase()}<br>`+
-      `Drag <b>${Math.round(Math.abs(vx))}px ${dirH}</b>, <b>${Math.round(Math.abs(vy2))}px ${dirV}</b> from FIRE<br>`+
-      `<span style="color:#7f8ba0">Sens ${sens.gen} · ${weapon.name}</span>`;
-    coach.style.left = Math.max(8, Math.min(innerWidth-286, fbr.left - 296))+'px';
-    coach.style.top = Math.max(56, fbr.top - 120)+'px';
-  } else coach.style.display = 'none';
-}
-
-/* ---------------- UI ---------------- */
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',1800); }
-function updateCash(){ document.getElementById('cash').textContent = cash; localStorage.setItem('fft3_cash', cash); }
-function openPanel(id){ document.getElementById(id).classList.add('open'); if(id==='shopPanel') renderShop(); if(id==='hudPanel') hudAnalyze(); }
-function closePanels(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open')); }
-function setLevel(l){ level = l; fillEnemies(); toast('Level: ' + l.toUpperCase()); }
-function setTargetMode(m){ targetMode = m;
-  document.getElementById('tgHead').classList.toggle('on', m==='head');
-  document.getElementById('tgBody').classList.toggle('on', m==='body');
-}
-
-/* Shop */
-function renderShop(){
-  const g = document.getElementById('wgrid'); g.innerHTML = '';
-  for (const w of WEAPONS){
-    const isOwned = owned.includes(w.id), isEq = weapon.id === w.id;
-    const div = document.createElement('div');
-    div.className = 'wcard' + (isEq ? ' equipped' : '');
-    div.innerHTML = `<div class="wn">${w.name}</div>
-      <div class="ws">DMG ${w.dmg} · RPM ${w.rpm}<br>MAG ${w.mag} · ${w.auto?'AUTO':'SEMI'}</div>
-      <div class="wp">${isEq ? '✔ EQUIPPED' : isOwned ? 'EQUIP' : '💰 $' + w.price}</div>`;
-    div.onclick = () => {
-      if (isEq) return;
-      if (isOwned){ equip(w); return; }
-      if (cash >= w.price){ cash -= w.price; owned.push(w.id); updateCash(); equip(w); renderShop(); toast('Purchased ' + w.name + '!'); saveOwned(); }
-      else toast('Not enough cash!');
-    };
-    g.appendChild(div);
-  }
-}
-function equip(w){ weapon = w; ammo = w.mag; buildGun(w.color);
-  document.getElementById('wpnTag').textContent = w.name;
-  document.getElementById('ammo').textContent = ammo + '/' + w.mag;
-  localStorage.setItem('fft3_wpn', w.id); renderShop(); toast('Equipped ' + w.name); }
-function saveOwned(){ localStorage.setItem('fft3_owned', JSON.stringify(owned)); }
-
-/* HUD */
-function hudApply(){
-  hud.fire = +document.getElementById('hudSize').value;
-  hud.op = +document.getElementById('hudOp').value;
-  hud.joy = +document.getElementById('hudJoy').value;
-  document.getElementById('hudSizeV').textContent = hud.fire;
-  document.getElementById('hudOpV').textContent = hud.op + '%';
-  document.getElementById('hudJoyV').textContent = hud.joy;
-  placeFB(); saveHUD();
-}
-function hudExport(){
-  const code = btoa(JSON.stringify({ v:1, hud, sens, wpn: weapon.id }));
-  document.getElementById('hudCode').value = code;
-  navigator.clipboard?.writeText(code);
-  toast('HUD code copied! 📋');
-}
-function hudImport(){
-  const code = document.getElementById('hudCode').value.trim();
-  if (!code) return toast('Paste a HUD code first');
-  try {
-    const d = JSON.parse(atob(code));
-    hud = d.hud; sens = d.sens;
-    if (d.wpn && WEAPONS.find(w => w.id === d.wpn)) weapon = WEAPONS.find(w => w.id === d.wpn);
-    document.getElementById('hudSize').value = hud.fire;
-    document.getElementById('hudOp').value = hud.op;
-    document.getElementById('hudJoy').value = hud.joy;
-    hudApply(); sensWrite(); equip(weapon);
-    toast('HUD loaded! ✅');
-  } catch(e){ toast('Invalid HUD code ❌'); }
-}
-function hudRandom(){
-  hud.fire = 70 + Math.round(Math.random()*90);
-  hud.fx = Math.round(Math.random()*220); hud.fy = Math.round(Math.random()*200);
-  hud.op = 75 + Math.round(Math.random()*25);
-  document.getElementById('hudSize').value = hud.fire;
-  document.getElementById('hudOp').value = hud.op;
-  hudApply();
-}
-function saveHUD(){ localStorage.setItem('fft3_hud', JSON.stringify(hud)); }
-function hudAnalyze(){
-  const box = document.getElementById('hudAI');
-  let v, tip;
-  if (hud.fire < 85){ v = 'small & precise'; tip = 'High control — pair it with higher sensitivity.'; }
-  else if (hud.fire <= 125){ v = 'balanced'; tip = 'Great all-round size for drag headshots.'; }
-  else { v = 'big & forgiving'; tip = 'Easy to press, but you may over-drag — lower your sensitivity.'; }
-  box.innerHTML = `<div class="h">🤖 HUD AI ANALYSIS</div>
-    Fire button is <b>${v}</b> (${hud.fire}px). ${tip}<br>
-    Recommended sensitivity for this HUD: <b>${aiSensValue()}%</b> → tap <b>AI: BUILD PERFECT SENSITIVITY</b>.`;
-}
-function aiSensValue(){ return Math.max(40, Math.min(190, Math.round(185 - hud.fire * 0.95))); }
-
-/* Sensitivity */
-function sensRead(){
-  sens.gen = +document.getElementById('sGen').value;
-  sens.red = +document.getElementById('sRed').value;
-  sens.s2  = +document.getElementById('s2x').value;
-  sens.s4  = +document.getElementById('s4x').value;
-  sens.awm = +document.getElementById('sAwm').value;
-  ['sGen','sRed','s2x','s4x','sAwm'].forEach((id,i) => {
-    document.getElementById(id+'V').textContent = [sens.gen,sens.red,sens.s2,sens.s4,sens.awm][i];
+navLinks.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("open");
+    menuToggle.textContent = "☰";
   });
-  localStorage.setItem('fft3_sens', JSON.stringify(sens));
-}
-function sensWrite(){
-  document.getElementById('sGen').value = sens.gen; document.getElementById('sRed').value = sens.red;
-  document.getElementById('s2x').value = sens.s2; document.getElementById('s4x').value = sens.s4;
-  document.getElementById('sAwm').value = sens.awm; sensRead();
-}
-function aiSens(){
-  const b = aiSensValue();
-  sens.gen = b; sens.red = Math.min(200, b+10); sens.s2 = Math.max(30, b-10);
-  sens.s4 = Math.max(30, b-25); sens.awm = Math.max(20, b-40);
-  sensWrite();
-  document.getElementById('sensAI').innerHTML = `<div class="h">🤖 AI SENSITIVITY BUILT</div>
-    Matched to your <b>${hud.fire}px</b> fire button:<br>
-    General <b>${sens.gen}</b> · Red Dot <b>${sens.red}</b> · 2x <b>${sens.s2}</b> · 4x <b>${sens.s4}</b> · AWM <b>${sens.awm}</b><br>
-    <span style="color:#7f8ba0">${hud.fire<85?'Small button → faster sens so short drags reach the head.':'Larger button → smoother sens so your drag stops exactly on the head.'}</span>`;
-  toast('AI sensitivity applied! 🎯');
+});
+
+/* =========================================
+   PROPERTY SEARCH
+========================================= */
+
+const searchForm = document.getElementById("propertySearch");
+const propertyCards = Array.from(
+  document.querySelectorAll(".property-card")
+);
+
+const listingCount = document.getElementById("listingCount");
+const noResults = document.getElementById("noResults");
+const searchFeedback = document.getElementById("searchFeedback");
+
+function filterProperties(event) {
+  if (event) event.preventDefault();
+
+  const type = document.getElementById("searchType").value;
+  const location = document.getElementById("searchLocation").value;
+  const purpose = document.getElementById("searchPurpose").value;
+
+  const minInput = document.getElementById("minBudget").value;
+  const maxInput = document.getElementById("maxBudget").value;
+
+  const minBudget = minInput === "" ? 0 : Number(minInput);
+  const maxBudget = maxInput === "" ? Infinity : Number(maxInput);
+
+  const bedrooms = Number(
+    document.getElementById("searchBedrooms").value
+  );
+
+  if (minBudget < 0 || maxBudget < 0) {
+    searchFeedback.textContent = "Please enter a valid positive budget.";
+    return;
+  }
+
+  if (minBudget > maxBudget) {
+    searchFeedback.textContent =
+      "Your minimum budget cannot be greater than your maximum budget.";
+    return;
+  }
+
+  let visible = 0;
+
+  propertyCards.forEach(card => {
+    const cardType = card.dataset.type;
+    const cardLocation = card.dataset.location;
+    const cardPurpose = card.dataset.purpose;
+    const price = Number(card.dataset.price);
+    const cardBedrooms = Number(card.dataset.bedrooms);
+
+    const matchesType = type === "all" || cardType === type;
+    const matchesLocation = location === "all" || cardLocation === location;
+    const matchesPurpose = purpose === "all" || cardPurpose === purpose;
+    const matchesMin = price >= minBudget;
+    const matchesMax = price <= maxBudget;
+
+    // Land has no bedroom count; exclude it when a bedroom
+    // requirement is specified.
+    const matchesBedrooms =
+      bedrooms === 0 ||
+      (cardBedrooms > 0 && cardBedrooms >= bedrooms);
+
+    const matches =
+      matchesType &&
+      matchesLocation &&
+      matchesPurpose &&
+      matchesMin &&
+      matchesMax &&
+      matchesBedrooms;
+
+    card.style.display = matches ? "" : "none";
+
+    if (matches) visible++;
+  });
+
+  listingCount.textContent =
+    "Showing " + visible + " matching demo " +
+    (visible === 1 ? "property" : "properties");
+
+  noResults.style.display = visible === 0 ? "block" : "none";
+
+  searchFeedback.textContent = visible
+    ? "Found " + visible + " matching demo " +
+      (visible === 1 ? "property." : "properties.") +
+      " Contact the HAVEN team to confirm actual availability."
+    : "No demo listings match every selected filter. Try widening your budget or changing your preferences.";
+
+  document.getElementById("properties").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 }
 
-/* init */
-sensWrite(); hudApply(); updateCash();
-document.getElementById('wpnTag').textContent = weapon.name;
-document.getElementById('ammo').textContent = ammo + '/' + weapon.mag;
-if (!isTouch) toast('Click screen to lock mouse · WASD move · SPACE jump · R reload');
+searchForm.addEventListener("submit", filterProperties);
+
+document.getElementById("clearSearch").addEventListener("click", () => {
+  setTimeout(() => {
+    propertyCards.forEach(card => {
+      card.style.display = "";
+    });
+
+    listingCount.textContent = "Showing all demo properties";
+    noResults.style.display = "none";
+    searchFeedback.textContent = "";
+  }, 0);
+});
+
+/* =========================================
+   PROPERTY DETAILS
+========================================= */
+
+const propertyDetails = [
+  {
+    title: "The Haven Villa",
+    location: "Lekki, Lagos",
+    price: "₦185,000,000 — demo price",
+    type: "Villa",
+    bedrooms: "5 bedrooms",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample luxury villa listing featuring spacious living areas and an elegant exterior. Confirm the actual features, price, ownership and availability before making any decision."
+  },
+  {
+    title: "Skyline Residence",
+    location: "Victoria Island, Lagos",
+    price: "₦3,500,000 per year — demo price",
+    type: "Apartment",
+    bedrooms: "3 bedrooms",
+    image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample contemporary apartment listing. Contact the property team to discuss rental terms and verify the actual property details."
+  },
+  {
+    title: "Willow Family House",
+    location: "Ikeja, Lagos",
+    price: "₦95,000,000 — demo price",
+    type: "House",
+    bedrooms: "4 bedrooms",
+    image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample family home listing. The displayed price and details are illustrative, not a verified property offer."
+  },
+  {
+    title: "Royal Garden Villa",
+    location: "Maitama, Abuja",
+    price: "₦220,000,000 — demo price",
+    type: "Villa",
+    bedrooms: "5 bedrooms",
+    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample premium villa listing. Ask the owner for verified specifications, location information and viewing arrangements."
+  },
+  {
+    title: "Emerald Apartment",
+    location: "New Owerri, Imo",
+    price: "₦1,200,000 per year — demo price",
+    type: "Apartment",
+    bedrooms: "2 bedrooms",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample apartment listing for the Owerri area. Confirm the actual rent, address, terms and availability with the property owner."
+  },
+  {
+    title: "Greenfield Plot",
+    location: "Epe, Lagos",
+    price: "₦15,000,000 — demo price",
+    type: "Land",
+    bedrooms: "Land",
+    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
+    description: "A sample land listing. Before any purchase, independently verify the exact location, title documents, ownership, planning restrictions and land status."
+  }
+];
+
+const propertyModal = document.getElementById("propertyModal");
+let selectedProperty = null;
+
+function openProperty(index) {
+  const property = propertyDetails[index];
+  if (!property) return;
+
+  selectedProperty = property;
+
+  document.getElementById("modalImage").style.backgroundImage =
+    "url('" + property.image + "')";
+
+  document.getElementById("modalLocation").textContent =
+    property.location;
+
+  document.getElementById("modalTitle").textContent =
+    property.title;
+
+  document.getElementById("modalDescription").textContent =
+    property.description;
+
+  document.getElementById("modalInfo").textContent =
+    property.type + "  •  " + property.bedrooms +
+    "  •  " + property.price;
+
+  propertyModal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeProperty() {
+  propertyModal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.querySelectorAll(".details-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    openProperty(Number(button.dataset.property));
+  });
+});
+
+document.getElementById("modalClose").addEventListener("click", closeProperty);
+
+propertyModal.addEventListener("click", event => {
+  if (event.target === propertyModal) closeProperty();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeProperty();
+});
+
+/* =========================================
+   WHATSAPP ENQUIRIES
+========================================= */
+
+function sendWhatsApp(message) {
+  const number = HAVEN_WHATSAPP.replace(/\D/g, "");
+
+  if (!number || number.length < 10) {
+    alert("Please configure the correct HAVEN WhatsApp number first.");
+    return;
+  }
+
+  const url =
+    "https://wa.me/" + number +
+    "?text=" + encodeURIComponent(message);
+
+  window.open(url, "_blank");
+}
+
+document.getElementById("modalEnquire").addEventListener("click", () => {
+  if (!selectedProperty) return;
+
+  sendWhatsApp(
+    "Hello HAVEN! I am interested in this property:\n\n" +
+    "Property: " + selectedProperty.title + "\n" +
+    "Location: " + selectedProperty.location + "\n" +
+    "Displayed demo price: " + selectedProperty.price + "\n\n" +
+    "Please confirm the actual price, availability and details."
+  );
+});
+
+document.getElementById("contactForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = document.getElementById("contactName").value.trim();
+  const phone = document.getElementById("contactPhone").value.trim();
+  const message = document.getElementById("contactMessage").value.trim();
+
+  if (!name || !phone || !message) {
+    alert("Please complete all the fields.");
+    return;
+  }
+
+  sendWhatsApp(
+    "Hello HAVEN!\n\n" +
+    "Property enquiry\n" +
+    "Name: " + name + "\n" +
+    "Phone: " + phone + "\n\n" +
+    "Requirements:\n" + message
+  );
+});
+
+/* =========================================
+   PROPERTY SEARCH WHATSAPP SHORTCUT
+========================================= */
+
+document.querySelector(".whatsapp-float").addEventListener("click", event => {
+  event.preventDefault();
+
+  sendWhatsApp(
+    "Hello HAVEN! I would like help finding a property. " +
+    "Please tell me about your available properties and services."
+  );
+});
+
+/* =========================================
+   SCROLL ANIMATIONS
+========================================= */
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll(".reveal").forEach(element => {
+  revealObserver.observe(element);
+});
+
+/* =========================================
+   FOOTER
+========================================= */
+
+document.getElementById("footerYear").textContent =
+  new Date().getFullYear();
+
 </script>
 </body>
 </html>
-'''
-with open('/mnt/agents/output/ff_trainer_3d.html', 'w') as f:
-    f.write(code)
-print(len(code), 'bytes')
